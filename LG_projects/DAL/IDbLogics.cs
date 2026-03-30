@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Microsoft.Data.SqlClient;
+using System.Collections;
 using System.Data;
 
 namespace LG_projects.DAL
@@ -15,8 +16,12 @@ namespace LG_projects.DAL
              string splitOn,
              object? parameters = null
          );
-        
+
         // Execute a query returning a single T
+
+
+        IEnumerable<T> ExecuteList<T>(string query, object? parameters = null);
+
         T ExecuteSingle<T>(string query, object? parameters = null);
 
         // Execute a query returning a single scalar value

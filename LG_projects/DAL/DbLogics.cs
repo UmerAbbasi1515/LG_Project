@@ -38,6 +38,12 @@ namespace LG_projects.DAL
             return conn.QueryFirstOrDefault<T>(query, parameters);
         }
 
+        public IEnumerable<T> ExecuteList<T>(string query, object? parameters = null)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            return conn.Query<T>(query, parameters);
+        }
+
         // Execute scalar (single value)
         public T ExecuteScalar<T>(string query, object? parameters = null)
         {

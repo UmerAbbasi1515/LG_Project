@@ -28,11 +28,11 @@ namespace LG_projects.Controllers
         }
         [AllowAnonymous]
         [HttpPost]
-        [Route("GetLanguagies")]
-        public async Task<ResponseResult<LanguageVm>> GetLanguagies()
+        [Route("GetLanguages")]
+        public async Task<ResponseResult<List<LanguageVm>>> GetLanguages()
         {
 
-            ResponseResult<LanguageVm> responseResult = new ResponseResult<LanguageVm>();
+            ResponseResult<List<LanguageVm>> responseResult = new ResponseResult<List<LanguageVm>>();
 
             try
             {
@@ -43,7 +43,7 @@ namespace LG_projects.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                responseResult = new ResponseResult<LanguageVm>
+                responseResult = new ResponseResult<List<LanguageVm>>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
@@ -56,10 +56,10 @@ namespace LG_projects.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("GetCountries")]
-        public async Task<ResponseResult<CountryVm>> GetCountries()
+        public async Task<ResponseResult<List<CountryVm>>> GetCountries()
         {
 
-            ResponseResult<CountryVm> responseResult = new ResponseResult<CountryVm>();
+            ResponseResult<List<CountryVm>> responseResult = new ResponseResult<List<CountryVm>>();
 
             try
             {
@@ -70,7 +70,7 @@ namespace LG_projects.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                responseResult = new ResponseResult<CountryVm>
+                responseResult = new ResponseResult<List<CountryVm>>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",

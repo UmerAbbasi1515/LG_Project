@@ -19,11 +19,11 @@ namespace LG_projects.Repository.Auth
             settings = _settings;
             db = _db;
         }
-        public async Task<ResponseResult<CountryVm>> GetCountriesRepo()
+        public async Task<ResponseResult<List<CountryVm>>> GetCountriesRepo()
         {
 
-            ResponseResult<CountryVm> responseResult = new ResponseResult<CountryVm>();
-            CountryVm getCountry = new CountryVm();
+            ResponseResult<List<CountryVm>> responseResult = new ResponseResult<List<CountryVm>>();
+            List<CountryVm> getCountry = new List<CountryVm>();
 
             try
             {
@@ -31,13 +31,13 @@ namespace LG_projects.Repository.Auth
                 var parameters = new Dapper.DynamicParameters();
 
                 DefaultTypeMap.MatchNamesWithUnderscores = true;
-                var response = db.ExecuteSingle<CountryVm>(query, parameters);
+                var response = db.ExecuteList<CountryVm>(query, parameters);
 
                 if (response != null)
                 {
-                    getCountry = response;
+                    getCountry = response.ToList();
 
-                        responseResult = new ResponseResult<CountryVm>
+                        responseResult = new ResponseResult<List<CountryVm>>
                         {
                             StatusCode = (int)HttpStatusCode.OK,
                             Message = "countries data found",
@@ -47,7 +47,7 @@ namespace LG_projects.Repository.Auth
                 }
                 else
                 {
-                    responseResult = new ResponseResult<CountryVm>
+                    responseResult = new ResponseResult<List<CountryVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "countries data not found",
@@ -58,7 +58,7 @@ namespace LG_projects.Repository.Auth
             }
             catch (Exception ex)
             {
-                responseResult = new ResponseResult<CountryVm>
+                responseResult = new ResponseResult<List<CountryVm>>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
@@ -69,25 +69,25 @@ namespace LG_projects.Repository.Auth
         }
 
 
-        public async Task<ResponseResult<LanguageVm>> GetLanguagesRepo()
+        public async Task<ResponseResult<List<LanguageVm>>> GetLanguagesRepo()
         {
 
-            ResponseResult<LanguageVm> responseResult = new ResponseResult<LanguageVm>();
-            LanguageVm getLanguage = new LanguageVm();
+            ResponseResult<List<LanguageVm>> responseResult = new ResponseResult<List<LanguageVm>>();
+            List<LanguageVm> getLanguage = new List<LanguageVm>();
 
             try
             {
-                string query = "select * from Language where Active = 1";
+                string query = "select * from Language";
                 var parameters = new Dapper.DynamicParameters();
 
                 DefaultTypeMap.MatchNamesWithUnderscores = true;
-                var response = db.ExecuteSingle<LanguageVm>(query, parameters);
+                var response = db.ExecuteList<LanguageVm> (query, parameters);
 
                 if (response != null)
                 {
-                    getLanguage = response;
+                    getLanguage = response.ToList();
 
-                        responseResult = new ResponseResult<LanguageVm>
+                        responseResult = new ResponseResult<List<LanguageVm>>
                         {
                             StatusCode = (int)HttpStatusCode.OK,
                             Message = "language data found",
@@ -97,7 +97,7 @@ namespace LG_projects.Repository.Auth
                 }
                 else
                 {
-                    responseResult = new ResponseResult<LanguageVm>
+                    responseResult = new ResponseResult<List<LanguageVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "language data not found",
@@ -108,7 +108,7 @@ namespace LG_projects.Repository.Auth
             }
             catch (Exception ex)
             {
-                responseResult = new ResponseResult<LanguageVm>
+                responseResult = new ResponseResult<List<LanguageVm>>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
