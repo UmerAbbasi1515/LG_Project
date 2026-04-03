@@ -1,18 +1,26 @@
 ﻿using Dapper;
+using LG_projects.Classes;
 using LG_projects.Common.BaseResponse;
 using LG_projects.DAL;
 using LG_projects.Repository.Project;
+using LG_projects.RequestModel.Project;
+using LG_projects.ResponseModel.Auth;
 using LG_projects.ResponseModel.Project;
+using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Net;
+using System.Reflection;
 
 namespace LG_projects.Repository.Auth
 {
     public class ProjectRepo : IProjectRepo
     {
         private readonly IDBLogics db;
-        public ProjectRepo(IDBLogics _db)
+        private readonly IWebHostEnvironment _env;
+        public ProjectRepo(IDBLogics _db, IWebHostEnvironment env)
         {
             db = _db;
+            _env = env;
         }
 
 
@@ -46,7 +54,7 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "user data",
+                        Message = "Projects data found",
                         Data = getProjects
                     };
                 }
@@ -141,7 +149,7 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "Projects found",
+                        Message = "Projects data found",
                         Data = getProjects
                     };
                 }
@@ -167,6 +175,88 @@ namespace LG_projects.Repository.Auth
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
+            }
+        }
+
+        public async Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback(AddFeedBackRequestModel model)
+        {
+            try
+            {
+                // 1. Insert Feedback
+                string query = @"
+                    INSERT INTO Feedback (name_en,name_ur,email,phone,whatsApp_phone,TextMessage,projectId,created_at)
+                    VALUES (@NameEn,@NameUr,@Email,@Phone,@Phone,@TextMessage,@ProjectId,GETDATE());
+                    SELECT CAST(SCOPE_IDENTITY() as int);
+                    ";
+
+                var feedbackId = db.ExecuteScalar<int>(query, new
+                {
+                    NameEn = model.NameEn,
+                    NameUr = model.NameUr,
+                    Email = model.Email,
+                    Phone = model.Phone,
+                    ComplaintFeedbackText = model.ComplaintFeedbackText,
+                    ProjectId = model.ProjectId
+                });
+
+                // 2. Save files & get paths
+                var imagePath = await FileHelper.SaveFile(model.ImageFile, "image", _env);
+                var videoPath = await FileHelper.SaveFile(model.VideoFile, "video", _env);
+                var audioPath = await FileHelper.SaveFile(model.AudioFile, "audio", _env);
+
+                // 3. Insert into FeedbackMedia
+                string mediaQuery = @"
+                    INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
+                    VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());
+                    ";
+
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    db.Execute(mediaQuery, new
+                    {
+                        FeedbackId = feedbackId,
+                        FilePath = imagePath,
+                        MediaType = "image"
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(videoPath))
+                {
+                    db.Execute(mediaQuery, new
+                    {
+                        FeedbackId = feedbackId,
+                        FilePath = videoPath,
+                        MediaType = "video"
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(audioPath))
+                {
+                    db.Execute(mediaQuery, new
+                    {
+                        FeedbackId = feedbackId,
+                        FilePath = audioPath,
+                        MediaType = "audio"
+                    });
+                }
+
+                return new ResponseResult<AddFeedbackReponseModel>
+                {
+                    StatusCode = 200,
+                    Message = "Success",
+                    Data = new AddFeedbackReponseModel
+                    {
+                        message = "Feedback added successfully"
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseResult<AddFeedbackReponseModel>
+                {
+                    StatusCode = 500,
+                    Message = ex.Message
+                };
             }
         }
     }

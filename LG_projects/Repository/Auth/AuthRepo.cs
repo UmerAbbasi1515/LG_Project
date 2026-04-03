@@ -77,7 +77,7 @@ namespace LG_projects.Repository.Auth
 
             try
             {
-                string query = "select * from Language";
+                string query = "select * from Language where Active = 1";
                 var parameters = new Dapper.DynamicParameters();
 
                 DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -156,7 +156,7 @@ namespace LG_projects.Repository.Auth
                         responseResult = new ResponseResult<OTPCode>
                         {
                             StatusCode = (int)HttpStatusCode.OK,
-                            Message = "user found",
+                            Message = "user data found",
                             Data = data
                         };
                     }
@@ -174,7 +174,7 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<OTPCode>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "user not found",
+                        Message = "user data not found",
                         Data = null
                     };
                 }

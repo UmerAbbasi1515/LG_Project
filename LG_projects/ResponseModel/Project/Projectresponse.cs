@@ -71,4 +71,22 @@
         public string? NameEn { get; set; }
         public string? NameUr { get; set; }
     }
+
+    public class AddFeedbackReponseModel
+    {
+        public string? message { get; set; }
+    }
+    public class GetFeedbackReponseModel
+    {
+        public string? Name { get; set; }
+        public string? NameUr { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? ProjectId { get; set; }
+        public string? ComplaintFeedbackText { get; set; }
+        public string? ComplaintFeedbackTextUr { get; set; }
+        public IFormFile? VideoFile { get; set; }
+        public IFormFile? ImageFile { get; set; }
+        public IFormFile? AudioFile { get; set; }
+    }
 }
