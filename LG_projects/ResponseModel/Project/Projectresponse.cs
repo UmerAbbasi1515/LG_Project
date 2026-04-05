@@ -76,17 +76,22 @@
     {
         public string? message { get; set; }
     }
-    public class GetFeedbackReponseModel
+    public class FeedbackResponseModel
     {
-        public string? Name { get; set; }
+        public int Id { get; set; }
+        public string? NameEn { get; set; }
         public string? NameUr { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        public string? ProjectId { get; set; }
-        public string? ComplaintFeedbackText { get; set; }
-        public string? ComplaintFeedbackTextUr { get; set; }
-        public IFormFile? VideoFile { get; set; }
-        public IFormFile? ImageFile { get; set; }
-        public IFormFile? AudioFile { get; set; }
+        public string? TextMessage { get; set; }
+        public int? ProjectId { get; set; }
+
+        public List<MediaModel> Media { get; set; } = new();
+    }
+
+    public class MediaModel
+    {
+        public string? FilePath { get; set; }
+        public string? MediaType { get; set; }
     }
 }

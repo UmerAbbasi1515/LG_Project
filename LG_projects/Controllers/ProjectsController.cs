@@ -110,7 +110,7 @@ namespace LG_projects.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("AddProjectFeedback")]
-        public async Task<ResponseResult<AddFeedbackReponseModel>> AddProjectFeedback([FromBody] AddFeedBackRequestModel param)
+        public async Task<ResponseResult<AddFeedbackReponseModel>> AddProjectFeedback([FromForm] AddFeedBackRequestModel param)
         {
             ResponseResult<AddFeedbackReponseModel> responseResult = new ResponseResult<AddFeedbackReponseModel>();
             try
@@ -148,9 +148,51 @@ namespace LG_projects.Controllers
                 return await Task.FromResult(responseResult);
             }
         }
-    
-    
-    
-    
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("GetProjectFeedback")]
+        public async Task<ResponseResult<List<FeedbackResponseModel>>> GetProjectFeedback([FromBody] GetFeedBackRequestModel param)
+        {
+            ResponseResult<List<FeedbackResponseModel>> responseResult = new ResponseResult<List<FeedbackResponseModel>>();
+            try
+            {
+                string bearerToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+
+                string jwtKey = configuration["Jwt:Key"]!.ToString();
+                string jwtIssuer = configuration["Jwt:Issuer"]!.ToString();
+                bool isValidToken = tokenService.IsTokenValid(bearerToken);
+
+                if (isValidToken)
+                {
+                    responseResult = await projectRepo.GetFeedback(param);
+                }
+                else
+                {
+                    responseResult = new ResponseResult<List<FeedbackResponseModel>>
+                    {
+                        StatusCode = (int)HttpStatusCode.Unauthorized,
+                        Message = "unauthorized",
+                        Data = null
+                    };
+                }
+                return await Task.FromResult(responseResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                responseResult = new ResponseResult<List<FeedbackResponseModel>>
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Message = "Internal Server Error",
+                    Data = null
+                };
+                return await Task.FromResult(responseResult);
+            }
+        }
+
+
+
+
     }
 }

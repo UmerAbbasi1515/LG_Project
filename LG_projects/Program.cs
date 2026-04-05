@@ -7,6 +7,7 @@ using LG_projects.Repository.Auth;
 using LG_projects.Repository.Profile;
 using LG_projects.Repository.Project;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -58,6 +59,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// for upload 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 524288000; // 500MB
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -74,7 +81,12 @@ app.UseHttpsRedirection();
 // ✅ Add Authentication
 app.UseAuthentication();
 app.UseAuthorization();
+
+// for upload 
+app.UseStaticFiles();
+
 //*********************// Custom***************************//
+
 
 app.MapControllers();
 

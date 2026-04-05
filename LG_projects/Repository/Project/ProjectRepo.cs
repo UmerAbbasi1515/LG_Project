@@ -195,11 +195,12 @@ namespace LG_projects.Repository.Auth
                     NameUr = model.NameUr,
                     Email = model.Email,
                     Phone = model.Phone,
-                    ComplaintFeedbackText = model.ComplaintFeedbackText,
+                    TextMessage = model.TextMessage,
                     ProjectId = model.ProjectId
                 });
 
                 // 2. Save files & get paths
+
                 var imagePath = await FileHelper.SaveFile(model.ImageFile, "image", _env);
                 var videoPath = await FileHelper.SaveFile(model.VideoFile, "video", _env);
                 var audioPath = await FileHelper.SaveFile(model.AudioFile, "audio", _env);
@@ -256,6 +257,80 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = 500,
                     Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedback(GetFeedBackRequestModel model)
+        {
+            try
+            {
+                string query = @"
+        SELECT 
+            f.id, 
+            f.name_en,
+            f.name_ur,
+            f.email,
+            f.phone,
+            f.TextMessage,
+            f.projectId,
+            fm.FilePath, 
+            fm.MediaType
+        FROM Feedback f
+        LEFT JOIN FeedbackMedia fm ON f.id = fm.feedbackId
+        WHERE f.projectId = @ProjectId
+        ORDER BY f.id DESC";
+
+                // Use your DAL method
+                var parameters = new { ProjectId = model.ProjectId };
+                var result = db.ExecuteList<dynamic>(query, parameters);
+
+                // Dictionary to group media by feedback id
+                var feedbackDict = new Dictionary<int, FeedbackResponseModel>();
+
+                foreach (var item in result)
+                {
+                    int id = (int)item.id;
+
+                    if (!feedbackDict.ContainsKey(id))
+                    {
+                        feedbackDict[id] = new FeedbackResponseModel
+                        {
+                            Id = id,
+                            NameEn = item.name_en,
+                            NameUr = item.name_ur,
+                            Email = item.email,
+                            Phone = item.phone,
+                            TextMessage = item.TextMessage,
+                            ProjectId = item.projectId,
+                            Media = new List<MediaModel>()
+                        };
+                    }
+
+                    if (item.FilePath != null)
+                    {
+                        feedbackDict[id].Media.Add(new MediaModel
+                        {
+                            FilePath = item.FilePath,
+                            MediaType = item.MediaType
+                        });
+                    }
+                }
+
+                return new ResponseResult<List<FeedbackResponseModel>>
+                {
+                    StatusCode = 200,
+                    Message = "feeback data found",
+                    Data = feedbackDict.Values.ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseResult<List<FeedbackResponseModel>>
+                {
+                    StatusCode = 500,
+                    Message = ex.Message,
+                    Data = null
                 };
             }
         }
