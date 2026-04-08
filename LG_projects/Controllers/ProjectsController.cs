@@ -190,9 +190,5 @@ namespace LG_projects.Controllers
                 return await Task.FromResult(responseResult);
             }
         }
-
-
-
-
     }
 }

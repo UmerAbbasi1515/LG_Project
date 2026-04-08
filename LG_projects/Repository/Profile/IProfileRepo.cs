@@ -1,4 +1,5 @@
 ﻿using LG_projects.Common.BaseResponse;
+using LG_projects.RequestModel.Auth;
 using LG_projects.ResponseModel.Auth;
 
 namespace LG_projects.Repository.Profile
@@ -6,5 +7,6 @@ namespace LG_projects.Repository.Profile
     public interface IProfileRepo
     {
         Task<ResponseResult<UserVm>> GetUserProfileRepo(string userId);
+        Task<ResponseResult<ProfileUpdatedVM>> UpdateUserProfileRepo(UpdateUserProfileRequestModel param);
     }
 }

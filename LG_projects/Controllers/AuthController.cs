@@ -85,23 +85,12 @@ namespace LG_projects.Controllers
         [Route("ValidateUser")]
         public async Task<ResponseResult<OTPCode>> ValidateUser([FromBody] UserRequestMobileModel param)
         {
-
             ResponseResult<OTPCode> responseResult = new ResponseResult<OTPCode>();
             UserVm getUser = new UserVm();
-
+            
             try
             {
-                string mobile = param.mobile ??"";
-                if (CrossSiteScriptingValidation.IsDangerousParameter(mobile.ToString(), out _))
-                {
-                    responseResult = new ResponseResult<OTPCode>
-                    {
-                        StatusCode = (int)HttpStatusCode.BadRequest,
-                        Message = "Invalid Request.",
-                        Data = null
-                    }; 
-                    return await Task.FromResult(responseResult);
-                }
+                string mobile = param.mobile ?? "";
                 responseResult = await authRepo.ValidateUserRepo(mobile.ToString());
                 return await Task.FromResult(responseResult);
             }
@@ -129,33 +118,6 @@ namespace LG_projects.Controllers
 
             try
             {
-                if (CrossSiteScriptingValidation.IsDangerousParameter(param.mobile?.ToString()??"", out _))
-                {
-                    responseResult = new ResponseResult<UserWithToken>
-                    {
-                        StatusCode = (int)HttpStatusCode.BadRequest,
-                        Message = "Invalid Request.",
-                        Data = null
-                    }; return await Task.FromResult(responseResult);
-                }
-                if (CrossSiteScriptingValidation.IsDangerousParameter(param.otpCode?.ToString()??"", out _))
-                {
-                    responseResult = new ResponseResult<UserWithToken>
-                    {
-                        StatusCode = (int)HttpStatusCode.BadRequest,
-                        Message = "Invalid Request.",
-                        Data = null
-                    }; return await Task.FromResult(responseResult);
-                }
-                if (CrossSiteScriptingValidation.IsDangerousParameter(param.otp?.ToString() ?? "", out _))
-                {
-                    responseResult = new ResponseResult<UserWithToken>
-                    {
-                        StatusCode = (int)HttpStatusCode.BadRequest,
-                        Message = "Invalid Request.",
-                        Data = null
-                    }; return await Task.FromResult(responseResult);
-                }
                 responseResult = await authRepo.VerifyUserOTPRepo(param.mobile?.ToString() ?? "", param.otpCode?.ToString() ?? "", param.otp?.ToString() ?? "", param.otpVerifyStatus);
                 return await Task.FromResult(responseResult);
             }

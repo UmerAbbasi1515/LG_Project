@@ -1,6 +1,8 @@
 ﻿using LG_projects.Classes.Token;
 using LG_projects.Common.BaseResponse;
+using LG_projects.Repository.Auth;
 using LG_projects.Repository.Profile;
+using LG_projects.RequestModel.Auth;
 using LG_projects.ResponseModel.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,9 +38,9 @@ namespace LG_projects.Controllers
                 var bearToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
                 if (tokenService.IsTokenValid(bearToken)) {
                     var list = tokenService.DecodeJWTToken(bearToken);
-                    string userId = list[0].ToString();
-                    string name = list[1].ToString();
-                    string phone = list[2].ToString();
+                    string userId = list[0]!.ToString();
+                    string name = list[1]!.ToString();
+                    string phone = list[2]!.ToString();
                     if (userId != null || userId != "")
                     {
                         responseResult = await profileRepo.GetUserProfileRepo(userId?.ToString()??"");
@@ -67,6 +69,47 @@ namespace LG_projects.Controllers
             {
                 Console.WriteLine(ex.ToString());
                 responseResult = new ResponseResult<UserVm>
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    Data = null
+                };
+                return await Task.FromResult(responseResult);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("UpdateUserProfile")]
+        public async Task<ResponseResult<ProfileUpdatedVM>> UpdateUserProfile([FromBody] UpdateUserProfileRequestModel param)
+        {
+
+            ResponseResult<ProfileUpdatedVM> responseResult = new ResponseResult<ProfileUpdatedVM>();
+            ProfileUpdatedVM updateprofile = new ProfileUpdatedVM();
+
+            try
+            {
+                var bearToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+                if (tokenService.IsTokenValid(bearToken))
+                {
+                    responseResult = await profileRepo.UpdateUserProfileRepo(param);
+                }
+                else
+                {
+                    responseResult = new ResponseResult<ProfileUpdatedVM>
+                    {
+                        StatusCode = (int)HttpStatusCode.Unauthorized,
+                        Message = "unauthorized",
+                        Data = null
+                    };
+                }
+                return await Task.FromResult(responseResult);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                responseResult = new ResponseResult<ProfileUpdatedVM>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",

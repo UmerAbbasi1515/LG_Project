@@ -25,6 +25,12 @@ namespace LG_projects.ResponseModel.Auth
         public string? NameUr { get; set; }
         public string? phone { get; set; }
         public string? email { get; set; }
+        public string? address { get; set; }
+        public string? addressUr { get; set; }
+    }
+    public class ProfileUpdatedVM
+    {
+        public string? message { get; set; }
     }
     public class OTPCode
     {
