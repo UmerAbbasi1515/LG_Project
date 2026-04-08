@@ -1,6 +1,6 @@
 ﻿using LG_projects.Classes;
 using LG_projects.Classes.Token;
-using LG_projects.Common.CrossSiteScriptingValidation;
+using LG_projects.Common.EncryptionDecryption;
 using LG_projects.Common.ListConvertor;
 using LG_projects.DAL;
 using LG_projects.Repository.Auth;
@@ -138,6 +138,11 @@ app.UseHttpsRedirection();
 
 
 //*********************// Custom***************************//
+
+
+// Add your middleware BEFORE routing so all requests go through it
+app.UseEncryptionDecryptionMiddleware();
+
 // ✅ Add Authentication
 app.UseAuthentication();
 app.UseAuthorization();
@@ -148,6 +153,7 @@ app.UseStaticFiles();
 //*********************// Custom***************************//
 
 
+app.UseRouting();
 app.MapControllers();
 
 app.Run();

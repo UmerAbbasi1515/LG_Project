@@ -9,7 +9,7 @@ namespace LG_projects.Classes.Token
 {
     public class TokenService : ITokenService
     {
-        private const double EXPIRY_DURATION_MINUTES = 5; //change 15 to 120;
+        private const double EXPIRY_DURATION_MINUTES = 1440; //change 15 to 120;
         private readonly IConfiguration configuration;
         public TokenService(IConfiguration _configuration)
         {
@@ -18,21 +18,21 @@ namespace LG_projects.Classes.Token
 
         public string BuildToken(UserVm user)
         {
-            string name = user.NameUr;
+            string name = user?.NameUr??"";
             string key = configuration["Jwt:Key"]!.ToString();
             string issuer = configuration["Jwt:Issuer"]!.ToString();
 
             var claims = new[]
               {
-                new Claim("id", user.id.ToString()),
-                new Claim("name", user.NameEn ?? ""),
-                new Claim("phone", user.phone ?? "")
+                new Claim("id", user?.id.ToString()??""),
+                new Claim("name", user?.NameEn ?? ""),
+                new Claim("phone", user?.phone ?? "")
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
             var tokenDescriptor = new JwtSecurityToken(issuer, issuer, claims,
-                expires: DateTime.UtcNow.AddMinutes(5).AddMinutes(EXPIRY_DURATION_MINUTES), signingCredentials: credentials);// use the const for expiry and not the static value
+                expires: DateTime.UtcNow.AddMinutes(1440).AddMinutes(EXPIRY_DURATION_MINUTES), signingCredentials: credentials);// use the const for expiry and not the static value
             foreach (var claim in claims)
             {
                 Console.WriteLine($"{claim.Type} = {claim.Value}");

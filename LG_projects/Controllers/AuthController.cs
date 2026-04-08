@@ -1,7 +1,6 @@
 ﻿using LG_projects.Classes;
 using LG_projects.Classes.Token;
 using LG_projects.Common.BaseResponse;
-using LG_projects.Common.CrossSiteScriptingValidation;
 using LG_projects.Common.ListConvertor;
 using LG_projects.DAL;
 using LG_projects.Repository.Auth;
