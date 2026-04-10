@@ -141,7 +141,7 @@ app.UseHttpsRedirection();
 
 
 // Add your middleware BEFORE routing so all requests go through it
-app.UseEncryptionDecryptionMiddleware();
+//app.UseEncryptionDecryptionMiddleware();
 
 // ✅ Add Authentication
 app.UseAuthentication();
