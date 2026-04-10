@@ -46,7 +46,7 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "user data",
+                        Message = "Projects data found",
                         Data = getProjects
                     };
                 }
@@ -141,7 +141,7 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "Projects found",
+                        Message = "Projects data found",
                         Data = getProjects
                     };
                 }
