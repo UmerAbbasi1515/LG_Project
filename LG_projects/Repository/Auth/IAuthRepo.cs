@@ -7,8 +7,9 @@ namespace LG_projects.Repository.Auth
     {
         Task<ResponseResult<List<CountryVm>>> GetCountriesRepo();
         Task<ResponseResult<List<LanguageVm>>> GetLanguagesRepo();
-        Task<ResponseResult<OTPCode>> ValidateUserRepo(string mobile);
-
-        Task<ResponseResult<UserWithToken>> VerifyUserOTPRepo(string mobile , string OTPCode, string otp,string otpVerifyStatus);
+        Task<ResponseResult<OTPCodeWithPasswordSetModel>> ValidateUserRepo(string mobile);
+        Task<ResponseResult<CommonMessageResponseModel>> VerifyUserOTPRepo(string mobile , string OTPCode, string otp,string otpVerifyStatus); 
+        Task<ResponseResult<CommonMessageResponseModel>> SetUserPassword(string mobile, string password);
+        Task<ResponseResult<UserWithToken>> VerifyUserPassword(string mobile, string password);
     }
 }

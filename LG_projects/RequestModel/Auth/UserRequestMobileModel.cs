@@ -30,7 +30,13 @@ namespace LG_projects.RequestModel.Auth
         [Required(ErrorMessage = "Parameter :userID is required")]
         public string? userID { get; set; }
     }
-
+    public class UserPasswordRequestModel
+    {
+        [Required(ErrorMessage = "Parameter :mobile is required")]
+        public string? mobile { get; set; }
+        [Required(ErrorMessage = "Parameter :password is required")]
+        public string? password { get; set; }
+    }
     public class UpdateUserProfileRequestModel
     {
         [Required(ErrorMessage = "Parameter : UserId is required")]

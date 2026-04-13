@@ -68,10 +68,10 @@ namespace LG_projects.Repository.Profile
             }
         }
 
-        public async Task<ResponseResult<ProfileUpdatedVM>> UpdateUserProfileRepo(UpdateUserProfileRequestModel model)
+        public async Task<ResponseResult<CommonMessageResponseModel>> UpdateUserProfileRepo(UpdateUserProfileRequestModel model)
         {
 
-            ResponseResult<ProfileUpdatedVM> responseResult = new ResponseResult<ProfileUpdatedVM>();
+            ResponseResult<CommonMessageResponseModel> responseResult = new ResponseResult<CommonMessageResponseModel>();
 
             try
             {
@@ -97,10 +97,10 @@ namespace LG_projects.Repository.Profile
                     parameters.Add("@AddressUr", model.AddressUr);
                     var rowsAffected =  db.Execute(query, parameters);
 
-                ProfileUpdatedVM profileUpdated = new ProfileUpdatedVM();
+                CommonMessageResponseModel profileUpdated = new CommonMessageResponseModel();
                 if (rowsAffected > 0) {
                     profileUpdated.message = "Profile updated successfully";
-                    responseResult = new ResponseResult<ProfileUpdatedVM>
+                    responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Success",
@@ -111,7 +111,7 @@ namespace LG_projects.Repository.Profile
                 {
 
                     profileUpdated.message = "Profile updated failed";
-                    responseResult = new ResponseResult<ProfileUpdatedVM>
+                    responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Failed",
@@ -122,7 +122,7 @@ namespace LG_projects.Repository.Profile
                 }
             catch (Exception ex)
             {
-                responseResult = new ResponseResult<ProfileUpdatedVM>
+                responseResult = new ResponseResult<CommonMessageResponseModel>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",

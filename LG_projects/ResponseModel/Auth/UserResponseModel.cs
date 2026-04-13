@@ -27,14 +27,17 @@ namespace LG_projects.ResponseModel.Auth
         public string? email { get; set; }
         public string? address { get; set; }
         public string? addressUr { get; set; }
+        public string? IsPassword { get; set; }
     }
-    public class ProfileUpdatedVM
+    public class CommonMessageResponseModel
     {
         public string? message { get; set; }
     }
-    public class OTPCode
+    
+    public class OTPCodeWithPasswordSetModel
     {
      public string? otpCode { get; set; }
+     public string? isPasswordSet { get; set; }
     }
     public class UserWithToken
     {

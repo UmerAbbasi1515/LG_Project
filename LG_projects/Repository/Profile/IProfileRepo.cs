@@ -7,6 +7,6 @@ namespace LG_projects.Repository.Profile
     public interface IProfileRepo
     {
         Task<ResponseResult<UserVm>> GetUserProfileRepo(string userId);
-        Task<ResponseResult<ProfileUpdatedVM>> UpdateUserProfileRepo(UpdateUserProfileRequestModel param);
+        Task<ResponseResult<CommonMessageResponseModel>> UpdateUserProfileRepo(UpdateUserProfileRequestModel param);
     }
 }

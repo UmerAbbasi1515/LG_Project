@@ -81,11 +81,11 @@ namespace LG_projects.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("UpdateUserProfile")]
-        public async Task<ResponseResult<ProfileUpdatedVM>> UpdateUserProfile([FromBody] UpdateUserProfileRequestModel param)
+        public async Task<ResponseResult<CommonMessageResponseModel>> UpdateUserProfile([FromBody] UpdateUserProfileRequestModel param)
         {
 
-            ResponseResult<ProfileUpdatedVM> responseResult = new ResponseResult<ProfileUpdatedVM>();
-            ProfileUpdatedVM updateprofile = new ProfileUpdatedVM();
+            ResponseResult<CommonMessageResponseModel> responseResult = new ResponseResult<CommonMessageResponseModel>();
+            CommonMessageResponseModel updateprofile = new CommonMessageResponseModel();
 
             try
             {
@@ -96,7 +96,7 @@ namespace LG_projects.Controllers
                 }
                 else
                 {
-                    responseResult = new ResponseResult<ProfileUpdatedVM>
+                    responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
                         Message = "unauthorized",
@@ -109,7 +109,7 @@ namespace LG_projects.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                responseResult = new ResponseResult<ProfileUpdatedVM>
+                responseResult = new ResponseResult<CommonMessageResponseModel>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
