@@ -55,7 +55,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
 
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+            Encoding.UTF8.GetBytes(builder?.Configuration["Jwt:Key"])
         )
     };
 });
@@ -141,7 +141,7 @@ app.UseHttpsRedirection();
 
 
 // Add your middleware BEFORE routing so all requests go through it
-//app.UseEncryptionDecryptionMiddleware();
+app.UseEncryptionDecryptionMiddleware();
 
 // ✅ Add Authentication
 app.UseAuthentication();

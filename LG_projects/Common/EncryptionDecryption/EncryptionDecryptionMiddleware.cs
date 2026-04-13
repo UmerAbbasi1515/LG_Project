@@ -20,33 +20,34 @@ namespace LG_projects.Common.EncryptionDecryption
         {
             try
             {
-                // Always decrypt the request body
-                httpContext.Request.EnableBuffering(); // Allow reading multiple times
-
-                using var sr = new StreamReader(httpContext.Request.Body, Encoding.UTF8, leaveOpen: true);
+                httpContext.Request.EnableBuffering();
+                using var sr = new StreamReader(
+                    httpContext.Request.Body, Encoding.UTF8, leaveOpen: true);
                 var originalContent = await sr.ReadToEndAsync();
-                httpContext.Request.Body.Position = 0; // Reset position for downstream
+                httpContext.Request.Body.Position = 0;
 
                 if (!string.IsNullOrWhiteSpace(originalContent))
                 {
                     var ds = JsonConvert.DeserializeObject<RB>(originalContent);
-
                     if (ds != null && !string.IsNullOrEmpty(ds.RequestBody))
                     {
-                        // Decrypt
                         var decryptedContent = EncryptionHelper.Decrypt(ds.RequestBody);
 
-                        // Replace the request body with decrypted JSON
                         var bytes = Encoding.UTF8.GetBytes(decryptedContent);
-                        httpContext.Request.Body = new MemoryStream(bytes);
+                        var newBody = new MemoryStream(bytes);
+                        newBody.Position = 0;                          // ← MUST reset to 0
+
+                        httpContext.Request.Body = newBody;
                         httpContext.Request.ContentLength = bytes.Length;
+
+                        // ↓ THIS IS CRITICAL — without this, model binding breaks
+                        httpContext.Request.ContentType = "application/json; charset=utf-8";
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Middleware decryption error: {ex.Message}");
-                // Continue pipeline even if decryption fails
             }
 
             await _next(httpContext);
