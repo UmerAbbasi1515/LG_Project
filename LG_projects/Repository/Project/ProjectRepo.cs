@@ -176,172 +176,6 @@ namespace LG_projects.Repository.Auth
                 return await Task.FromResult(responseResult);
             }
         }
-
-        //public async Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback(AddFeedBackRequestModel model)
-        //{
-        //    try
-        //    {
-        //        // 1. Insert Feedback
-        //        string query = @"
-        //            INSERT INTO Feedback (name_en,name_ur,email,phone,whatsApp_phone,TextMessage,projectId,created_at)
-        //            VALUES (@NameEn,@NameUr,@Email,@Phone,@Phone,@TextMessage,@ProjectId,GETDATE());
-        //            SELECT CAST(SCOPE_IDENTITY() as int);
-        //            ";
-
-        //        var feedbackId = db.ExecuteScalar<int>(query, new
-        //        {
-        //            NameEn = model.NameEn,
-        //            NameUr = model.NameUr,
-        //            Email = model.Email,
-        //            Phone = model.Phone,
-        //            TextMessage = model.TextMessage,
-        //            ProjectId = model.ProjectId
-        //        });
-
-        //        // 2. Save files & get paths
-
-        //        var imagePath = await FileHelper.SaveFile(model.ImageFile, "image", _env);
-        //        var videoPath = await FileHelper.SaveFile(model.VideoFile, "video", _env);
-        //        var audioPath = await FileHelper.SaveFile(model.AudioFile, "audio", _env);
-
-        //        // 3. Insert into FeedbackMedia
-        //        string mediaQuery = @"
-        //            INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
-        //            VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());
-        //            ";
-
-        //        if (!string.IsNullOrEmpty(imagePath))
-        //        {
-        //            db.Execute(mediaQuery, new
-        //            {
-        //                FeedbackId = feedbackId,
-        //                FilePath = imagePath,
-        //                MediaType = "image"
-        //            });
-        //        }
-
-        //        if (!string.IsNullOrEmpty(videoPath))
-        //        {
-        //            db.Execute(mediaQuery, new
-        //            {
-        //                FeedbackId = feedbackId,
-        //                FilePath = videoPath,
-        //                MediaType = "video"
-        //            });
-        //        }
-
-        //        if (!string.IsNullOrEmpty(audioPath))
-        //        {
-        //            db.Execute(mediaQuery, new
-        //            {
-        //                FeedbackId = feedbackId,
-        //                FilePath = audioPath,
-        //                MediaType = "audio"
-        //            });
-        //        }
-
-        //        return new ResponseResult<AddFeedbackReponseModel>
-        //        {
-        //            StatusCode = 200,
-        //            Message = "Success",
-        //            Data = new AddFeedbackReponseModel
-        //            {
-        //                message = "Feedback added successfully"
-        //            }
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResponseResult<AddFeedbackReponseModel>
-        //        {
-        //            StatusCode = 500,
-        //            Message = ex.Message
-        //        };
-        //    }
-        //}
-
-        //public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedback(GetFeedBackRequestModel model)
-        //{
-        //    try
-        //    {
-        //        string query = @"
-        //SELECT 
-        //    f.id, 
-        //    f.name_en,
-        //    f.name_ur,
-        //    f.email,
-        //    f.phone,
-        //    f.TextMessage,
-        //    f.projectId,
-        //    fm.FilePath, 
-        //    fm.MediaType
-        //FROM Feedback f
-        //LEFT JOIN FeedbackMedia fm ON f.id = fm.feedbackId
-        //WHERE f.projectId = @ProjectId
-        //ORDER BY f.id DESC";
-
-        //        // Use your DAL method
-        //        var parameters = new { ProjectId = model.ProjectId };
-        //        var result = db.ExecuteList<dynamic>(query, parameters);
-
-        //        // Dictionary to group media by feedback id
-        //        var feedbackDict = new Dictionary<int, FeedbackResponseModel>();
-
-        //        foreach (var item in result)
-        //        {
-        //            int id = (int)item.id;
-
-        //            if (!feedbackDict.ContainsKey(id))
-        //            {
-        //                feedbackDict[id] = new FeedbackResponseModel
-        //                {
-        //                    Id = id,
-        //                    NameEn = item.name_en,
-        //                    NameUr = item.name_ur,
-        //                    Email = item.email,
-        //                    Phone = item.phone,
-        //                    TextMessage = item.TextMessage,
-        //                    ProjectId = item.projectId,
-        //                    Media = new List<MediaModel>()
-        //                };
-        //            }
-
-        //            if (item.FilePath != null)
-        //            {
-        //                feedbackDict[id].Media.Add(new MediaModel
-        //                {
-        //                    FilePath = item.FilePath,
-        //                    MediaType = item.MediaType
-        //                });
-        //            }
-        //        }
-
-        //        return new ResponseResult<List<FeedbackResponseModel>>
-        //        {
-        //            StatusCode = 200,
-        //            Message = "feeback data found",
-        //            Data = feedbackDict.Values.ToList()
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResponseResult<List<FeedbackResponseModel>>
-        //        {
-        //            StatusCode = 500,
-        //            Message = ex.Message,
-        //            Data = null
-        //        };
-        //    }
-        //}
-
-        // ============================================================
-        // FILE 4: Repository/FeedbackRepo.cs
-        // Changes:
-        //   ✅ Fixed @Phone → @WhatsAppPhone bug
-        //   ✅ Added WhatsAppPhone to parameters
-        //   ✅ GET: builds full PreviewUrl = BaseUrl + FilePath
-        // ============================================================
-
         public async Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback(AddFeedBackRequestModel model)
         {
             try
@@ -349,9 +183,9 @@ namespace LG_projects.Repository.Auth
                 // ── Step 1: Insert Feedback row ───────────────────────────────
                 string query = @"
             INSERT INTO Feedback 
-                (name_en, name_ur, email, phone, whatsApp_phone, TextMessage, projectId, created_at)
+                (name_en, name_ur, email, phone, whatsApp_phone, TextMessage,isFeedbackAdded, projectId, created_at)
             VALUES 
-                (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage, @ProjectId, GETDATE());
+                (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage,@isFeedbackAdded, @ProjectId, GETDATE());
             SELECT CAST(SCOPE_IDENTITY() AS int);";
                 //                                  ↑
                 //   FIXED: was @Phone before — now correctly @WhatsAppPhone
@@ -363,6 +197,7 @@ namespace LG_projects.Repository.Auth
                     Email = model.Email,
                     Phone = model.Phone,
                     WhatsAppPhone = model.Phone,
+                    isFeedbackAdded = model.isFeedbackAdded,
                     TextMessage = model.TextMessage,
                     ProjectId = model.ProjectId
                 });
@@ -428,7 +263,7 @@ namespace LG_projects.Repository.Auth
                 };
             }
         }
-
+     
 
         public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedback(GetFeedBackRequestModel model)
         {

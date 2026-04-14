@@ -27,6 +27,8 @@ public class AddFeedBackRequestModel : IValidatableObject
 
         [Required(ErrorMessage = "Parameter : ProjectId is required")]
         public string? ProjectId { get; set; }
+        [Required(ErrorMessage = "Parameter : isFeedbackAdded is required")]
+        public string? isFeedbackAdded { get; set; }
 
         public string? TextMessage { get; set; }
 
