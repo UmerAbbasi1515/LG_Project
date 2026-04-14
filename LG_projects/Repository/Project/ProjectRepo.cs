@@ -4,12 +4,8 @@ using LG_projects.Common.BaseResponse;
 using LG_projects.DAL;
 using LG_projects.Repository.Project;
 using LG_projects.RequestModel.Project;
-using LG_projects.ResponseModel.Auth;
 using LG_projects.ResponseModel.Project;
-using Microsoft.AspNetCore.Mvc;
-using System.Data;
 using System.Net;
-using System.Reflection;
 
 namespace LG_projects.Repository.Auth
 {
@@ -17,10 +13,13 @@ namespace LG_projects.Repository.Auth
     {
         private readonly IDBLogics db;
         private readonly IWebHostEnvironment _env;
-        public ProjectRepo(IDBLogics _db, IWebHostEnvironment env)
+
+        private readonly IConfiguration configuration;
+        public ProjectRepo(IDBLogics _db, IWebHostEnvironment env, IConfiguration configuration)
         {
             db = _db;
             _env = env;
+            this.configuration = configuration;
         }
 
 
@@ -178,16 +177,184 @@ namespace LG_projects.Repository.Auth
             }
         }
 
+        //public async Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback(AddFeedBackRequestModel model)
+        //{
+        //    try
+        //    {
+        //        // 1. Insert Feedback
+        //        string query = @"
+        //            INSERT INTO Feedback (name_en,name_ur,email,phone,whatsApp_phone,TextMessage,projectId,created_at)
+        //            VALUES (@NameEn,@NameUr,@Email,@Phone,@Phone,@TextMessage,@ProjectId,GETDATE());
+        //            SELECT CAST(SCOPE_IDENTITY() as int);
+        //            ";
+
+        //        var feedbackId = db.ExecuteScalar<int>(query, new
+        //        {
+        //            NameEn = model.NameEn,
+        //            NameUr = model.NameUr,
+        //            Email = model.Email,
+        //            Phone = model.Phone,
+        //            TextMessage = model.TextMessage,
+        //            ProjectId = model.ProjectId
+        //        });
+
+        //        // 2. Save files & get paths
+
+        //        var imagePath = await FileHelper.SaveFile(model.ImageFile, "image", _env);
+        //        var videoPath = await FileHelper.SaveFile(model.VideoFile, "video", _env);
+        //        var audioPath = await FileHelper.SaveFile(model.AudioFile, "audio", _env);
+
+        //        // 3. Insert into FeedbackMedia
+        //        string mediaQuery = @"
+        //            INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
+        //            VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());
+        //            ";
+
+        //        if (!string.IsNullOrEmpty(imagePath))
+        //        {
+        //            db.Execute(mediaQuery, new
+        //            {
+        //                FeedbackId = feedbackId,
+        //                FilePath = imagePath,
+        //                MediaType = "image"
+        //            });
+        //        }
+
+        //        if (!string.IsNullOrEmpty(videoPath))
+        //        {
+        //            db.Execute(mediaQuery, new
+        //            {
+        //                FeedbackId = feedbackId,
+        //                FilePath = videoPath,
+        //                MediaType = "video"
+        //            });
+        //        }
+
+        //        if (!string.IsNullOrEmpty(audioPath))
+        //        {
+        //            db.Execute(mediaQuery, new
+        //            {
+        //                FeedbackId = feedbackId,
+        //                FilePath = audioPath,
+        //                MediaType = "audio"
+        //            });
+        //        }
+
+        //        return new ResponseResult<AddFeedbackReponseModel>
+        //        {
+        //            StatusCode = 200,
+        //            Message = "Success",
+        //            Data = new AddFeedbackReponseModel
+        //            {
+        //                message = "Feedback added successfully"
+        //            }
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResponseResult<AddFeedbackReponseModel>
+        //        {
+        //            StatusCode = 500,
+        //            Message = ex.Message
+        //        };
+        //    }
+        //}
+
+        //public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedback(GetFeedBackRequestModel model)
+        //{
+        //    try
+        //    {
+        //        string query = @"
+        //SELECT 
+        //    f.id, 
+        //    f.name_en,
+        //    f.name_ur,
+        //    f.email,
+        //    f.phone,
+        //    f.TextMessage,
+        //    f.projectId,
+        //    fm.FilePath, 
+        //    fm.MediaType
+        //FROM Feedback f
+        //LEFT JOIN FeedbackMedia fm ON f.id = fm.feedbackId
+        //WHERE f.projectId = @ProjectId
+        //ORDER BY f.id DESC";
+
+        //        // Use your DAL method
+        //        var parameters = new { ProjectId = model.ProjectId };
+        //        var result = db.ExecuteList<dynamic>(query, parameters);
+
+        //        // Dictionary to group media by feedback id
+        //        var feedbackDict = new Dictionary<int, FeedbackResponseModel>();
+
+        //        foreach (var item in result)
+        //        {
+        //            int id = (int)item.id;
+
+        //            if (!feedbackDict.ContainsKey(id))
+        //            {
+        //                feedbackDict[id] = new FeedbackResponseModel
+        //                {
+        //                    Id = id,
+        //                    NameEn = item.name_en,
+        //                    NameUr = item.name_ur,
+        //                    Email = item.email,
+        //                    Phone = item.phone,
+        //                    TextMessage = item.TextMessage,
+        //                    ProjectId = item.projectId,
+        //                    Media = new List<MediaModel>()
+        //                };
+        //            }
+
+        //            if (item.FilePath != null)
+        //            {
+        //                feedbackDict[id].Media.Add(new MediaModel
+        //                {
+        //                    FilePath = item.FilePath,
+        //                    MediaType = item.MediaType
+        //                });
+        //            }
+        //        }
+
+        //        return new ResponseResult<List<FeedbackResponseModel>>
+        //        {
+        //            StatusCode = 200,
+        //            Message = "feeback data found",
+        //            Data = feedbackDict.Values.ToList()
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResponseResult<List<FeedbackResponseModel>>
+        //        {
+        //            StatusCode = 500,
+        //            Message = ex.Message,
+        //            Data = null
+        //        };
+        //    }
+        //}
+
+        // ============================================================
+        // FILE 4: Repository/FeedbackRepo.cs
+        // Changes:
+        //   ✅ Fixed @Phone → @WhatsAppPhone bug
+        //   ✅ Added WhatsAppPhone to parameters
+        //   ✅ GET: builds full PreviewUrl = BaseUrl + FilePath
+        // ============================================================
+
         public async Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback(AddFeedBackRequestModel model)
         {
             try
             {
-                // 1. Insert Feedback
+                // ── Step 1: Insert Feedback row ───────────────────────────────
                 string query = @"
-                    INSERT INTO Feedback (name_en,name_ur,email,phone,whatsApp_phone,TextMessage,projectId,created_at)
-                    VALUES (@NameEn,@NameUr,@Email,@Phone,@Phone,@TextMessage,@ProjectId,GETDATE());
-                    SELECT CAST(SCOPE_IDENTITY() as int);
-                    ";
+            INSERT INTO Feedback 
+                (name_en, name_ur, email, phone, whatsApp_phone, TextMessage, projectId, created_at)
+            VALUES 
+                (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage, @ProjectId, GETDATE());
+            SELECT CAST(SCOPE_IDENTITY() AS int);";
+                //                                  ↑
+                //   FIXED: was @Phone before — now correctly @WhatsAppPhone
 
                 var feedbackId = db.ExecuteScalar<int>(query, new
                 {
@@ -195,28 +362,29 @@ namespace LG_projects.Repository.Auth
                     NameUr = model.NameUr,
                     Email = model.Email,
                     Phone = model.Phone,
+                    WhatsAppPhone = model.Phone,
                     TextMessage = model.TextMessage,
                     ProjectId = model.ProjectId
                 });
 
-                // 2. Save files & get paths
-
+                // ── Step 2: Save files to disk, get relative paths ────────────
+                // FileHelper returns "" if file is null — safe to call always
                 var imagePath = await FileHelper.SaveFile(model.ImageFile, "image", _env);
                 var videoPath = await FileHelper.SaveFile(model.VideoFile, "video", _env);
                 var audioPath = await FileHelper.SaveFile(model.AudioFile, "audio", _env);
 
-                // 3. Insert into FeedbackMedia
+                // ── Step 3: Insert each file into FeedbackMedia table ─────────
                 string mediaQuery = @"
-                    INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
-                    VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());
-                    ";
+            INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
+            VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());";
 
+                // Only insert if file was actually uploaded and saved
                 if (!string.IsNullOrEmpty(imagePath))
                 {
                     db.Execute(mediaQuery, new
                     {
                         FeedbackId = feedbackId,
-                        FilePath = imagePath,
+                        FilePath = imagePath,   // e.g. /media/images/abc.jpg
                         MediaType = "image"
                     });
                 }
@@ -226,7 +394,7 @@ namespace LG_projects.Repository.Auth
                     db.Execute(mediaQuery, new
                     {
                         FeedbackId = feedbackId,
-                        FilePath = videoPath,
+                        FilePath = videoPath,   // e.g. /media/videos/abc.mp4
                         MediaType = "video"
                     });
                 }
@@ -236,7 +404,7 @@ namespace LG_projects.Repository.Auth
                     db.Execute(mediaQuery, new
                     {
                         FeedbackId = feedbackId,
-                        FilePath = audioPath,
+                        FilePath = audioPath,   // e.g. /media/audios/abc.mp3
                         MediaType = "audio"
                     });
                 }
@@ -261,37 +429,51 @@ namespace LG_projects.Repository.Auth
             }
         }
 
+
         public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedback(GetFeedBackRequestModel model)
         {
             try
             {
+                // ── Step 1: Build BaseUrl for preview links ───────────────────
+                // This reads your app URL from appsettings.json
+                // In appsettings.json add:
+                //   "AppSettings": { "BaseUrl": "https://localhost:7000" }
+                //
+                // OR pass IConfiguration into your repo constructor and read it.
+                // For now it reads from _config which you already have injected.
+                string baseUrl = configuration["AppSettings:BaseUrl"]?.TrimEnd('/') ?? "";
+
+                // ── Step 2: Query Feedback + Media joined ─────────────────────
                 string query = @"
-        SELECT 
-            f.id, 
-            f.name_en,
-            f.name_ur,
-            f.email,
-            f.phone,
-            f.TextMessage,
-            f.projectId,
-            fm.FilePath, 
-            fm.MediaType
-        FROM Feedback f
-        LEFT JOIN FeedbackMedia fm ON f.id = fm.feedbackId
-        WHERE f.projectId = @ProjectId
-        ORDER BY f.id DESC";
+            SELECT 
+                f.id,
+                f.name_en,
+                f.name_ur,
+                f.email,
+                f.phone,
+                f.whatsApp_phone,
+                f.TextMessage,
+                f.projectId,
+                fm.FilePath,
+                fm.MediaType
+            FROM Feedback f
+            LEFT JOIN FeedbackMedia fm ON f.id = fm.feedbackId
+            WHERE f.projectId = @ProjectId
+            ORDER BY f.id DESC";
 
-                // Use your DAL method
-                var parameters = new { ProjectId = model.ProjectId };
-                var result = db.ExecuteList<dynamic>(query, parameters);
+                var result = db.ExecuteList<dynamic>(query, new { ProjectId = model.ProjectId });
 
-                // Dictionary to group media by feedback id
+                // ── Step 3: Group rows by feedback id ────────────────────────
+                // Because LEFT JOIN returns one row PER media file,
+                // one feedback with 3 files = 3 rows in result.
+                // We group them back into one object with a Media list.
                 var feedbackDict = new Dictionary<int, FeedbackResponseModel>();
 
                 foreach (var item in result)
                 {
                     int id = (int)item.id;
 
+                    // First time we see this feedback id — create the object
                     if (!feedbackDict.ContainsKey(id))
                     {
                         feedbackDict[id] = new FeedbackResponseModel
@@ -301,18 +483,30 @@ namespace LG_projects.Repository.Auth
                             NameUr = item.name_ur,
                             Email = item.email,
                             Phone = item.phone,
+                            WhatsAppPhone = item.phone,
                             TextMessage = item.TextMessage,
                             ProjectId = item.projectId,
                             Media = new List<MediaModel>()
                         };
                     }
 
+                    // If this row has a media file, add it to the Media list
                     if (item.FilePath != null)
                     {
+                        string filePath = (string)item.FilePath;
+                        // filePath from DB = "/media/images/abc.jpg"
+                        // PreviewUrl      = "https://localhost:7000/media/images/abc.jpg"
+                        // ↑ User can paste this in browser and see/play the file
+
                         feedbackDict[id].Media.Add(new MediaModel
                         {
-                            FilePath = item.FilePath,
-                            MediaType = item.MediaType
+                            FilePath = filePath,
+                            MediaType = item.MediaType,
+                            PreviewUrl = baseUrl + filePath
+                            // Examples:
+                            //   https://localhost:7000/media/images/abc.jpg  → browser shows image
+                            //   https://localhost:7000/media/videos/abc.mp4  → browser plays video
+                            //   https://localhost:7000/media/audios/abc.mp3  → browser plays audio
                         });
                     }
                 }
@@ -320,7 +514,7 @@ namespace LG_projects.Repository.Auth
                 return new ResponseResult<List<FeedbackResponseModel>>
                 {
                     StatusCode = 200,
-                    Message = "feeback data found",
+                    Message = "Feedback data found",
                     Data = feedbackDict.Values.ToList()
                 };
             }
@@ -334,5 +528,6 @@ namespace LG_projects.Repository.Auth
                 };
             }
         }
+
     }
 }

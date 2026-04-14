@@ -83,6 +83,8 @@
         public string? NameUr { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
+        public string? WhatsAppPhone { get; set; }
+        
         public string? TextMessage { get; set; }
         public int? ProjectId { get; set; }
 
@@ -93,5 +95,6 @@
     {
         public string? FilePath { get; set; }
         public string? MediaType { get; set; }
+        public string? PreviewUrl { get; set; }
     }
 }

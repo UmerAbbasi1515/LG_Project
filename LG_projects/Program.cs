@@ -55,7 +55,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
 
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder?.Configuration["Jwt:Key"])
+            Encoding.UTF8.GetBytes(builder!.Configuration!["Jwt:Key"]??"")
         )
     };
 });
@@ -124,36 +124,40 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = 524288000; // 500MB
 });
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// ✅ 1 — Routing first
+app.UseRouting();
+
+// ✅ 2 — HTTPS
 app.UseHttpsRedirection();
 
-
-//*********************// Custom***************************//
-
-
-// Add your middleware BEFORE routing so all requests go through it
+// ✅ 3 — Your decryption middleware
 app.UseEncryptionDecryptionMiddleware();
 
-// ✅ Add Authentication
+// ✅ 4 — Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
-// for upload 
-app.UseStaticFiles();
+// ✅ 5 — Media static files (ONLY ONE UseStaticFiles)
+var mediaPath = Path.GetFullPath(
+    Path.Combine(Directory.GetCurrentDirectory(), "..", "LGPMediaFiles"));
 
-//*********************// Custom***************************//
+Directory.CreateDirectory(mediaPath);
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(mediaPath),
+    RequestPath = "/media"
+});
 
-app.UseRouting();
+// ✅ 6 — Controllers last
 app.MapControllers();
 
 app.Run();
