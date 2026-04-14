@@ -183,9 +183,9 @@ namespace LG_projects.Repository.Auth
                 // ── Step 1: Insert Feedback row ───────────────────────────────
                 string query = @"
             INSERT INTO Feedback 
-                (name_en, name_ur, email, phone, whatsApp_phone, TextMessage,isFeedbackAdded, projectId, created_at)
+                (name_en, name_ur, email, phone, whatsApp_phone, TextMessage, projectId, created_at)
             VALUES 
-                (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage,@isFeedbackAdded, @ProjectId, GETDATE());
+                (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage, @ProjectId, GETDATE());
             SELECT CAST(SCOPE_IDENTITY() AS int);";
                 //                                  ↑
                 //   FIXED: was @Phone before — now correctly @WhatsAppPhone
@@ -197,7 +197,6 @@ namespace LG_projects.Repository.Auth
                     Email = model.Email,
                     Phone = model.Phone,
                     WhatsAppPhone = model.Phone,
-                    isFeedbackAdded = model.isFeedbackAdded,
                     TextMessage = model.TextMessage,
                     ProjectId = model.ProjectId
                 });
