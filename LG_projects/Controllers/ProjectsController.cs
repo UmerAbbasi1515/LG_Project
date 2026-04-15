@@ -1,7 +1,9 @@
 ﻿using LG_projects.Classes.Token;
 using LG_projects.Common.BaseResponse;
+using LG_projects.Repository.Auth;
 using LG_projects.Repository.Project;
 using LG_projects.RequestModel.Project;
+using LG_projects.ResponseModel.Auth;
 using LG_projects.ResponseModel.Project;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -109,6 +111,34 @@ namespace LG_projects.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        [Route("IsFeedbackAdded")]
+        public async Task<ResponseResult<IsFeedbackAddedResponseModel>> IsFeedbackAdded([FromBody] GetFeedBackRequestModel param)
+        {
+
+            ResponseResult<IsFeedbackAddedResponseModel> responseResult = new ResponseResult<IsFeedbackAddedResponseModel>();
+
+            try
+            {
+
+                responseResult = await projectRepo.IsAddedFeedback(param.ProjectId??"");
+                return await Task.FromResult(responseResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                responseResult = new ResponseResult<IsFeedbackAddedResponseModel>
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    Data = null
+                };
+                return await Task.FromResult(responseResult);
+            }
+        }
+
+
+        [AllowAnonymous]
+        [HttpPost]
         [Route("AddProjectFeedback")]
         public async Task<ResponseResult<AddFeedbackReponseModel>> AddProjectFeedback([FromForm] AddFeedBackRequestModel param)
         {
@@ -152,9 +182,9 @@ namespace LG_projects.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("GetProjectFeedback")]
-        public async Task<ResponseResult<List<FeedbackResponseModel>>> GetProjectFeedback([FromBody] GetFeedBackRequestModel param)
+        public async Task<ResponseResult<FeedbackResponseModel>> GetProjectFeedback([FromBody] GetFeedBackRequestModel param)
         {
-            ResponseResult<List<FeedbackResponseModel>> responseResult = new ResponseResult<List<FeedbackResponseModel>>();
+            ResponseResult<FeedbackResponseModel> responseResult = new ResponseResult<FeedbackResponseModel>();
             try
             {
                 string bearerToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
@@ -169,7 +199,7 @@ namespace LG_projects.Controllers
                 }
                 else
                 {
-                    responseResult = new ResponseResult<List<FeedbackResponseModel>>
+                    responseResult = new ResponseResult<FeedbackResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
                         Message = "unauthorized",
@@ -181,7 +211,7 @@ namespace LG_projects.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                responseResult = new ResponseResult<List<FeedbackResponseModel>>
+                responseResult = new ResponseResult<FeedbackResponseModel>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error",

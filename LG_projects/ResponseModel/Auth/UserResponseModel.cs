@@ -33,7 +33,11 @@ namespace LG_projects.ResponseModel.Auth
     {
         public string? message { get; set; }
     }
-    
+
+    public class IsFeedbackAddedResponseModel
+    {
+        public bool? isfeedbackAdded { get; set; }
+    }
     public class OTPCodeWithPasswordSetModel
     {
      public string? otpCode { get; set; }
