@@ -325,104 +325,104 @@ namespace LG_projects.Repository.Auth
 
 
         //List of feedback
-        //public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedback(GetFeedBackRequestModel model)
-        //{
-        //    try
-        //    {
-        //        // ── Step 1: Build BaseUrl for preview links ───────────────────
-        //        // This reads your app URL from appsettings.json
-        //        // In appsettings.json add:
-        //        //   "AppSettings": { "BaseUrl": "https://localhost:7000" }
-        //        //
-        //        // OR pass IConfiguration into your repo constructor and read it.
-        //        // For now it reads from _config which you already have injected.
-        //        string baseUrl = configuration["AppSettings:BaseUrl"]?.TrimEnd('/') ?? "";
+        public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedbackList(GetFeedBackRequestModel model)
+        {
+            try
+            {
+                // ── Step 1: Build BaseUrl for preview links ───────────────────
+                // This reads your app URL from appsettings.json
+                // In appsettings.json add:
+                //   "AppSettings": { "BaseUrl": "https://localhost:7000" }
+                //
+                // OR pass IConfiguration into your repo constructor and read it.
+                // For now it reads from _config which you already have injected.
+                string baseUrl = configuration["AppSettings:BaseUrl"]?.TrimEnd('/') ?? "";
 
-        //        // ── Step 2: Query Feedback + Media joined ─────────────────────
-        //        string query = @"
-        //    SELECT 
-        //        f.id,
-        //        f.name_en,
-        //        f.name_ur,
-        //        f.email,
-        //        f.phone,
-        //        f.whatsApp_phone,
-        //        f.TextMessage,
-        //        f.projectId,
-        //        fm.FilePath,
-        //        fm.MediaType
-        //    FROM Feedback f
-        //    LEFT JOIN FeedbackMedia fm ON f.id = fm.feedbackId
-        //    WHERE f.projectId = @ProjectId
-        //    ORDER BY f.id DESC";
+                // ── Step 2: Query Feedback + Media joined ─────────────────────
+                string query = @"
+            SELECT 
+                f.id,
+                f.name_en,
+                f.name_ur,
+                f.email,
+                f.phone,
+                f.whatsApp_phone,
+                f.TextMessage,
+                f.projectId,
+                fm.FilePath,
+                fm.MediaType
+            FROM Feedback f
+            LEFT JOIN FeedbackMedia fm ON f.id = fm.feedbackId
+            WHERE f.projectId = @ProjectId
+            ORDER BY f.id DESC";
 
-        //        var result = db.ExecuteList<dynamic>(query, new { ProjectId = model.ProjectId });
+                var result = db.ExecuteList<dynamic>(query, new { ProjectId = model.ProjectId });
 
-        //        // ── Step 3: Group rows by feedback id ────────────────────────
-        //        // Because LEFT JOIN returns one row PER media file,
-        //        // one feedback with 3 files = 3 rows in result.
-        //        // We group them back into one object with a Media list.
-        //        var feedbackDict = new Dictionary<int, FeedbackResponseModel>();
+                // ── Step 3: Group rows by feedback id ────────────────────────
+                // Because LEFT JOIN returns one row PER media file,
+                // one feedback with 3 files = 3 rows in result.
+                // We group them back into one object with a Media list.
+                var feedbackDict = new Dictionary<int, FeedbackResponseModel>();
 
-        //        foreach (var item in result)
-        //        {
-        //            int id = (int)item.id;
+                foreach (var item in result)
+                {
+                    int id = (int)item.id;
 
-        //            // First time we see this feedback id — create the object
-        //            if (!feedbackDict.ContainsKey(id))
-        //            {
-        //                feedbackDict[id] = new FeedbackResponseModel
-        //                {
-        //                    Id = id,
-        //                    NameEn = item.name_en,
-        //                    NameUr = item.name_ur,
-        //                    Email = item.email,
-        //                    Phone = item.phone,
-        //                    WhatsAppPhone = item.phone,
-        //                    TextMessage = item.TextMessage,
-        //                    ProjectId = item.projectId,
-        //                    Media = new List<MediaModel>()
-        //                };
-        //            }
+                    // First time we see this feedback id — create the object
+                    if (!feedbackDict.ContainsKey(id))
+                    {
+                        feedbackDict[id] = new FeedbackResponseModel
+                        {
+                            Id = id,
+                            NameEn = item.name_en,
+                            NameUr = item.name_ur,
+                            Email = item.email,
+                            Phone = item.phone,
+                            WhatsAppPhone = item.phone,
+                            TextMessage = item.TextMessage,
+                            ProjectId = item.projectId,
+                            Media = new List<MediaModel>()
+                        };
+                    }
 
-        //            // If this row has a media file, add it to the Media list
-        //            if (item.FilePath != null)
-        //            {
-        //                string filePath = (string)item.FilePath;
-        //                // filePath from DB = "/media/images/abc.jpg"
-        //                // PreviewUrl      = "https://localhost:7000/media/images/abc.jpg"
-        //                // ↑ User can paste this in browser and see/play the file
+                    // If this row has a media file, add it to the Media list
+                    if (item.FilePath != null)
+                    {
+                        string filePath = (string)item.FilePath;
+                        // filePath from DB = "/media/images/abc.jpg"
+                        // PreviewUrl      = "https://localhost:7000/media/images/abc.jpg"
+                        // ↑ User can paste this in browser and see/play the file
 
-        //                feedbackDict[id].Media.Add(new MediaModel
-        //                {
-        //                    FilePath = filePath,
-        //                    MediaType = item.MediaType,
-        //                    PreviewUrl = baseUrl + filePath
-        //                    // Examples:
-        //                    //   https://localhost:7000/media/images/abc.jpg  → browser shows image
-        //                    //   https://localhost:7000/media/videos/abc.mp4  → browser plays video
-        //                    //   https://localhost:7000/media/audios/abc.mp3  → browser plays audio
-        //                });
-        //            }
-        //        }
+                        feedbackDict[id].Media.Add(new MediaModel
+                        {
+                            FilePath = filePath,
+                            MediaType = item.MediaType,
+                            PreviewUrl = baseUrl + filePath
+                            // Examples:
+                            //   https://localhost:7000/media/images/abc.jpg  → browser shows image
+                            //   https://localhost:7000/media/videos/abc.mp4  → browser plays video
+                            //   https://localhost:7000/media/audios/abc.mp3  → browser plays audio
+                        });
+                    }
+                }
 
-        //        return new ResponseResult<List<FeedbackResponseModel>>
-        //        {
-        //            StatusCode = 200,
-        //            Message = "Feedback data found",
-        //            Data = feedbackDict.Values.ToList()
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResponseResult<List<FeedbackResponseModel>>
-        //        {
-        //            StatusCode = 500,
-        //            Message = ex.Message,
-        //            Data = null
-        //        };
-        //    }
-        //}
+                return new ResponseResult<List<FeedbackResponseModel>>
+                {
+                    StatusCode = 200,
+                    Message = "Feedback data found",
+                    Data = feedbackDict.Values.ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseResult<List<FeedbackResponseModel>>
+                {
+                    StatusCode = 500,
+                    Message = ex.Message,
+                    Data = null
+                };
+            }
+        }
 
         public async Task<ResponseResult<FeedbackResponseModel>> GetFeedback(GetFeedBackRequestModel model)
         {

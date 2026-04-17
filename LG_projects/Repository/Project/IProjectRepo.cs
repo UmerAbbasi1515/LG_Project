@@ -14,6 +14,6 @@ namespace LG_projects.Repository.Project
         public Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback([FromBody] AddFeedBackRequestModel param);
         public Task<ResponseResult<FeedbackResponseModel>> GetFeedback([FromBody] GetFeedBackRequestModel param);
 
-        //public Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedback([FromBody] GetFeedBackRequestModel param);
+        public Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedbackList([FromBody] GetFeedBackRequestModel param);
     }
 }
