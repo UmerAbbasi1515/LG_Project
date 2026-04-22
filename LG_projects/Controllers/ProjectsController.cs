@@ -48,7 +48,8 @@ namespace LG_projects.Controllers
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
-                        Message = "unauthorized",
+                        Message = "Unauthorized access. Please log in to continue or ensure you have the necessary permissions.",
+                        MessageUr = "غیر مجاز رسائی۔ براہ کرم جاری رکھنے کے لیے لاگ ان کریں یا اپنی اجازتوں کی تصدیق کریں۔",
                         Data = null
                     };
                 }
@@ -60,7 +61,8 @@ namespace LG_projects.Controllers
                 responseResult = new ResponseResult<List<ProjectVm>>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
-                    Message = "Internal Server Error",
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -90,7 +92,8 @@ namespace LG_projects.Controllers
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
-                        Message = "unauthorized",
+                        Message = "Unauthorized access. Please log in to continue or ensure you have the necessary permissions.",
+                        MessageUr = "غیر مجاز رسائی۔ براہ کرم جاری رکھنے کے لیے لاگ ان کریں یا اپنی اجازتوں کی تصدیق کریں۔",
                         Data = null
                     };
                 }
@@ -102,7 +105,8 @@ namespace LG_projects.Controllers
                 responseResult = new ResponseResult<List<ProjectVm>>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
-                    Message = "Internal Server Error",
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -130,6 +134,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -140,9 +145,9 @@ namespace LG_projects.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("AddProjectFeedback")]
-        public async Task<ResponseResult<AddFeedbackReponseModel>> AddProjectFeedback([FromForm] AddFeedBackRequestModel param)
+        public async Task<ResponseResult<CommonMessageResponseModel>> AddProjectFeedback([FromForm] AddFeedBackRequestModel param)
         {
-            ResponseResult<AddFeedbackReponseModel> responseResult = new ResponseResult<AddFeedbackReponseModel>();
+            ResponseResult<CommonMessageResponseModel> responseResult = new ResponseResult<CommonMessageResponseModel>();
             try
             {
                 string bearerToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
@@ -157,10 +162,11 @@ namespace LG_projects.Controllers
                 }
                 else
                 {
-                    responseResult = new ResponseResult<AddFeedbackReponseModel>
+                    responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
-                        Message = "unauthorized",
+                        Message = "Unauthorized access. Please log in to continue or ensure you have the necessary permissions.",
+                        MessageUr = "غیر مجاز رسائی۔ براہ کرم جاری رکھنے کے لیے لاگ ان کریں یا اپنی اجازتوں کی تصدیق کریں۔",
                         Data = null
                     };
                 }
@@ -169,10 +175,11 @@ namespace LG_projects.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                responseResult = new ResponseResult<AddFeedbackReponseModel>
+                responseResult = new ResponseResult<CommonMessageResponseModel>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
-                    Message = "Internal Server Error",
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -202,7 +209,8 @@ namespace LG_projects.Controllers
                     responseResult = new ResponseResult<FeedbackResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
-                        Message = "unauthorized",
+                        Message = "Unauthorized access. Please log in to continue or ensure you have the necessary permissions.",
+                        MessageUr = "غیر مجاز رسائی۔ براہ کرم جاری رکھنے کے لیے لاگ ان کریں یا اپنی اجازتوں کی تصدیق کریں۔",
                         Data = null
                     };
                 }
@@ -214,7 +222,8 @@ namespace LG_projects.Controllers
                 responseResult = new ResponseResult<FeedbackResponseModel>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
-                    Message = "Internal Server Error",
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -244,7 +253,8 @@ namespace LG_projects.Controllers
                     responseResult = new ResponseResult<List<FeedbackResponseModel>>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
-                        Message = "unauthorized",
+                        Message = "Unauthorized access. Please log in to continue or ensure you have the necessary permissions.",
+                        MessageUr = "غیر مجاز رسائی۔ براہ کرم جاری رکھنے کے لیے لاگ ان کریں یا اپنی اجازتوں کی تصدیق کریں۔",
                         Data = null
                     };
                 }
@@ -256,7 +266,8 @@ namespace LG_projects.Controllers
                 responseResult = new ResponseResult<List<FeedbackResponseModel>>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
-                    Message = "Internal Server Error",
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);

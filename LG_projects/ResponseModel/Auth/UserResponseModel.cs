@@ -32,6 +32,7 @@ namespace LG_projects.ResponseModel.Auth
     public class CommonMessageResponseModel
     {
         public string? message { get; set; }
+        public string? messageUr { get; set; }
     }
 
     public class IsFeedbackAddedResponseModel

@@ -41,6 +41,7 @@ namespace LG_projects.Repository.Auth
                         {
                             StatusCode = (int)HttpStatusCode.OK,
                             Message = "countries data found",
+                            MessageUr = "ممالک کا ڈیٹا ملا", 
                             Data = getCountry
                         };
                     
@@ -51,6 +52,7 @@ namespace LG_projects.Repository.Auth
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "countries data not found",
+                        MessageUr = "ممالک کا ڈیٹا نہیں ملا",
                         Data = null
                     };
                 }
@@ -62,6 +64,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -89,6 +92,7 @@ namespace LG_projects.Repository.Auth
                         {
                             StatusCode = (int)HttpStatusCode.OK,
                             Message = "language data found",
+                            MessageUr = "زبان کا ڈیٹا ملا",
                             Data = getLanguage
                         };
                     
@@ -99,6 +103,7 @@ namespace LG_projects.Repository.Auth
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "language data not found",
+                        MessageUr = "زبان کا ڈیٹا نہیں ملا",
                         Data = null
                     };
                 }
@@ -110,6 +115,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -154,6 +160,7 @@ namespace LG_projects.Repository.Auth
                         {
                             StatusCode = (int)HttpStatusCode.OK,
                             Message = "user data found",
+                            MessageUr = "صارف کا ڈیٹا ملا",
                             Data = data
                         };
                     }
@@ -162,6 +169,7 @@ namespace LG_projects.Repository.Auth
                         {
                             StatusCode = (int)HttpStatusCode.OK,
                             Message = "unable to generate otp, please try again later",
+                            MessageUr = "او ٹی پی بنانے سے قاصر، براہ کرم بعد میں دوبارہ کوشش کریں۔",
                             Data = null
                         };
                     }
@@ -172,6 +180,7 @@ namespace LG_projects.Repository.Auth
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "user data not found",
+                        MessageUr = "صارف کا ڈیٹا نہیں ملا",
                         Data = null
                     };
                 }
@@ -183,6 +192,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" +" ("+ ex.Message+")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -227,18 +237,22 @@ namespace LG_projects.Repository.Auth
                         var dataWithToken = new UserWithToken();
                         if (isverified == 0) {
                             commonMessage.message = "OTP Verification Failed";
+                            commonMessage.messageUr = "OTP کی توثیق ناکام ہو گئی۔";
                             responseResult = new ResponseResult<CommonMessageResponseModel>
                             {
                                 StatusCode = (int)HttpStatusCode.OK,
                                 Message = "user verification failed",
+                                MessageUr = "صارف کی تصدیق ناکام ہوگئی",
                                 Data = commonMessage
                             };
                         } else {
                             commonMessage.message = "OTP Verification Successfull";
+                            commonMessage.messageUr = "OTP کی توثیق کامیاب";
                             responseResult = new ResponseResult<CommonMessageResponseModel>
                             {
                                 StatusCode = (int)HttpStatusCode.OK,
                                 Message = "user verification successfull",
+                                MessageUr = "صارف کی تصدیق کامیاب",
                                 Data = commonMessage
                             };
                         }
@@ -247,8 +261,9 @@ namespace LG_projects.Repository.Auth
                          responseResult = new ResponseResult<CommonMessageResponseModel>
                         {
                             StatusCode = (int)HttpStatusCode.OK,
-                            Message = "Token generation failed,Please try again later / contact with support team",
-                            Data = null
+                            Message = "user verification failed",
+                             MessageUr = "صارف کی تصدیق ناکام ہوگئی",
+                             Data = null
                         };
                     }
                 }
@@ -257,7 +272,8 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "Token generation failed,Please try again later / contact with support team",
+                        Message = "user verification successfull",
+                        MessageUr = "صارف کی تصدیق کامیاب",
                         Data = null
                     };
                 }
@@ -269,6 +285,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -293,20 +310,24 @@ namespace LG_projects.Repository.Auth
                 if (rowsAffected > 0)
                 {
                     commonMessage.message = "Password update successfully";
+                    commonMessage.messageUr = "پاس ورڈ کامیابی سے اپ ڈیٹ ہو گیا۔";
                     responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Password update successfull",
+                        MessageUr = "پاس ورڈ اپ ڈیٹ کامیاب",
                         Data = commonMessage
                     };
                 }
                 else
                 {
                     commonMessage.message = "Password update failed";
+                    commonMessage.messageUr = "پاس ورڈ اپ ڈیٹ ناکام ہو گیا۔";
                     responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Password update failed",
+                        MessageUr = "پاس ورڈ اپ ڈیٹ ناکام ہو گیا۔",
                         Data = commonMessage
                     };
                 }
@@ -318,6 +339,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -352,6 +374,7 @@ namespace LG_projects.Repository.Auth
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "user data found and token generated successully",
+                        MessageUr = "صارف کا ڈیٹا ملا اور ٹوکن کامیابی سے تیار ہوا۔",
                         Data = data
                     };
                 }
@@ -361,6 +384,7 @@ namespace LG_projects.Repository.Auth
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Token generation failed,Please try again later / contact with support team",
+                        MessageUr = " ٹوکن جنریشن ناکام، براہ کرم بعد میں دوبارہ کوشش کریں / سپورٹ ٹیم سے رابطہ کریں۔",
                         Data = null
                     };
                 }
@@ -372,6 +396,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);

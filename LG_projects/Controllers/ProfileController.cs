@@ -58,7 +58,8 @@ namespace LG_projects.Controllers
                     responseResult = new ResponseResult<UserVm>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
-                        Message = "unauthorized",
+                        Message = "Unauthorized access. Please log in to continue or ensure you have the necessary permissions.",
+                        MessageUr = "غیر مجاز رسائی۔ براہ کرم جاری رکھنے کے لیے لاگ ان کریں یا اپنی اجازتوں کی تصدیق کریں۔",
                         Data = null
                     };
                 }
@@ -72,6 +73,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -99,7 +101,8 @@ namespace LG_projects.Controllers
                     responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.Unauthorized,
-                        Message = "unauthorized",
+                        Message = "Unauthorized access. Please log in to continue or ensure you have the necessary permissions.",
+                        MessageUr = "غیر مجاز رسائی۔ براہ کرم جاری رکھنے کے لیے لاگ ان کریں یا اپنی اجازتوں کی تصدیق کریں۔",
                         Data = null
                     };
                 }
@@ -113,6 +116,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);

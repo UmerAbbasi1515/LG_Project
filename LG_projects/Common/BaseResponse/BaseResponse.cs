@@ -9,7 +9,9 @@ namespace LG_projects.Common.BaseResponse
             public int StatusCode { get; set; }
             [JsonProperty("Message")]
             public string? Message { get; set; }
-            [JsonProperty("Data")]
+            [JsonProperty("MessageUr")]
+            public string? MessageUr { get; set; }
+        [JsonProperty("Data")]
             public T? Data { get; set; }
         }
     }

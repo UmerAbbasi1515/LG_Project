@@ -46,6 +46,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -73,6 +74,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -100,6 +102,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -127,6 +130,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -155,6 +159,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -183,6 +188,7 @@ namespace LG_projects.Controllers
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);

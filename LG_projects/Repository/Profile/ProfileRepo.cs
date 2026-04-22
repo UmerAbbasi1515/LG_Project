@@ -41,7 +41,8 @@ namespace LG_projects.Repository.Profile
                     responseResult = new ResponseResult<UserVm>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "user data found",
+                        Message = "user profile data found",
+                        MessageUr = "صارف کا پروفائل ڈیٹا ملا",
                         Data = getUser
                     };
                 }
@@ -50,7 +51,8 @@ namespace LG_projects.Repository.Profile
                     responseResult = new ResponseResult<UserVm>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "user data not found",
+                        Message = "user profile data not found",
+                        MessageUr = "صارف کا پروفائل ڈیٹا نہیں ملا",
                         Data = null
                     };
                 }
@@ -62,6 +64,7 @@ namespace LG_projects.Repository.Profile
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -100,10 +103,12 @@ namespace LG_projects.Repository.Profile
                 CommonMessageResponseModel profileUpdated = new CommonMessageResponseModel();
                 if (rowsAffected > 0) {
                     profileUpdated.message = "Profile updated successfully";
+                    profileUpdated.messageUr = "پروفائل کامیابی کے ساتھ اپ ڈیٹ ہو گیا۔";
                     responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Success",
+                        MessageUr = "کامیابی",
                         Data = profileUpdated
                     };
                 }
@@ -111,10 +116,12 @@ namespace LG_projects.Repository.Profile
                 {
 
                     profileUpdated.message = "Profile updated failed";
+                    profileUpdated.messageUr = "پروفائل کو اپ ڈیٹ کرنا ناکام ہو گیا۔";
                     responseResult = new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Failed",
+                        MessageUr = "ناکام",
                         Data = null
                     };
                 }
@@ -126,6 +133,7 @@ namespace LG_projects.Repository.Profile
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);

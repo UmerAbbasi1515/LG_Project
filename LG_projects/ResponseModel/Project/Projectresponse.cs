@@ -72,10 +72,7 @@
         public string? NameUr { get; set; }
     }
 
-    public class AddFeedbackReponseModel
-    {
-        public string? message { get; set; }
-    }
+    
     public class FeedbackResponseModel
     {
         public int Id { get; set; }

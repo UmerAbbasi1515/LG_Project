@@ -57,6 +57,7 @@ namespace LG_projects.Repository.Auth
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Projects data found",
+                        MessageUr = "پروجیکٹ کا ڈیٹا ملا",
                         Data = getProjects
                     };
                 }
@@ -65,7 +66,8 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "no record found",
+                        Message = "Projects data not found",
+                        MessageUr = "پروجیکٹ کا ڈیٹا نہیں ملا",
                         Data = null
                     };
                 }
@@ -78,6 +80,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -152,6 +155,7 @@ namespace LG_projects.Repository.Auth
                     {
                         StatusCode = (int)HttpStatusCode.OK,
                         Message = "Projects data found",
+                        MessageUr = "پروجیکٹ کا ڈیٹا ملا",
                         Data = getProjects
                     };
                 }
@@ -160,7 +164,8 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<List<ProjectVm>>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "No record found",
+                        Message = "Projects data not found",
+                        MessageUr = "پروجیکٹ کا ڈیٹا نہیں ملا",
                         Data = null
                     };
                 }
@@ -174,6 +179,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
@@ -203,7 +209,8 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<IsFeedbackAddedResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "countries data found",
+                        Message = "data found",
+                        MessageUr = "ڈیٹا ملا",
                         Data = isFeedback
                     };
 
@@ -213,7 +220,8 @@ namespace LG_projects.Repository.Auth
                     responseResult = new ResponseResult<IsFeedbackAddedResponseModel>
                     {
                         StatusCode = (int)HttpStatusCode.OK,
-                        Message = "countries data not found",
+                        Message = "data not found",
+                        MessageUr = "ڈیٹا نہیں ملا",
                         Data = null
                     };
                 }
@@ -225,13 +233,14 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
                 return await Task.FromResult(responseResult);
             }
         }
 
-        public async Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback(AddFeedBackRequestModel model)
+        public async Task<ResponseResult<CommonMessageResponseModel>> AddFeedback(AddFeedBackRequestModel model)
         {
             try
             {
@@ -302,29 +311,43 @@ namespace LG_projects.Repository.Auth
                 var updateParameters = new Dapper.DynamicParameters();
                 updateParameters.Add("@isFeedbackAdded", 1);
                 updateParameters.Add("@id", model.ProjectId);
-                db.Execute(updateQuery, updateParameters);
-                return new ResponseResult<AddFeedbackReponseModel>
-                {
-                    StatusCode = 200,
-                    Message = "Success",
-                    Data = new AddFeedbackReponseModel
+              var res =  db.Execute(updateQuery, updateParameters);
+                if (res > 0) {
+                    return new ResponseResult<CommonMessageResponseModel>
                     {
-                        message = "Feedback added successfully"
-                    }
-                };
+                        StatusCode = 200,
+                        Message = "Success",
+                        Data = new CommonMessageResponseModel
+                        {
+                            message = "Feedback added successfully",
+                            messageUr = "تاثرات کامیابی کے ساتھ شامل ہو گئے۔"
+                        }
+                    };
+                } else {
+                    return new ResponseResult<CommonMessageResponseModel>
+                    {
+                        StatusCode = 200,
+                        Message = "Failed",
+                        Data = new CommonMessageResponseModel
+                        {
+                            message = "Feedback added failed",
+                            messageUr = "تاثرات شامل کرنا ناکام ہو گیا۔"
+                        }
+                    };
+                }
             }
             catch (Exception ex)
             {
-                return new ResponseResult<AddFeedbackReponseModel>
+                return new ResponseResult<CommonMessageResponseModel>
                 {
                     StatusCode = 500,
-                    Message = ex.Message
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                 };
             }
         }
 
-
-        //List of feedback
+                //List of feedback
         public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedbackList(GetFeedBackRequestModel model)
         {
             try
@@ -357,6 +380,17 @@ namespace LG_projects.Repository.Auth
             ORDER BY f.id DESC";
 
                 var result = db.ExecuteList<dynamic>(query, new { ProjectId = model.ProjectId });
+
+                if (result == null)
+                {
+                    return new ResponseResult<List<FeedbackResponseModel>>
+                    {
+                        StatusCode = 200,
+                        Message = "Feedback data not found",
+                        MessageUr = "تاثرات کا ڈیٹا نہیں ملا",
+                        Data = null
+                    };
+                }
 
                 // ── Step 3: Group rows by feedback id ────────────────────────
                 // Because LEFT JOIN returns one row PER media file,
@@ -410,6 +444,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = 200,
                     Message = "Feedback data found",
+                    MessageUr = "تاثرات کا ڈیٹا ملا",
                     Data = feedbackDict.Values.ToList()
                 };
             }
@@ -418,7 +453,8 @@ namespace LG_projects.Repository.Auth
                 return new ResponseResult<List<FeedbackResponseModel>>
                 {
                     StatusCode = 500,
-                    Message = ex.Message,
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
             }
@@ -459,7 +495,8 @@ namespace LG_projects.Repository.Auth
                     return new ResponseResult<FeedbackResponseModel>
                     {
                         StatusCode = 404,
-                        Message = "No feedback found",
+                        Message = "Feedback data found",
+                        MessageUr = "تاثرات کا ڈیٹا ملا",
                         Data = null
                     };
                 }
@@ -500,6 +537,7 @@ namespace LG_projects.Repository.Auth
                 {
                     StatusCode = 200,
                     Message = "Feedback data found",
+                    MessageUr = "تاثرات کا ڈیٹا نہیں ملا",
                     Data = feedback
                 };
             }
@@ -508,7 +546,8 @@ namespace LG_projects.Repository.Auth
                 return new ResponseResult<FeedbackResponseModel>
                 {
                     StatusCode = 500,
-                    Message = ex.Message,
+                    Message = "Internal Server Error" + " (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
                     Data = null
                 };
             }

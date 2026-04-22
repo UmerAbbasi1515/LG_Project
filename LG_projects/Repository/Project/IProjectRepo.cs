@@ -11,7 +11,7 @@ namespace LG_projects.Repository.Project
         public Task<ResponseResult<List<ProjectVm>>> GetProjects(); 
         public Task<ResponseResult<List<ProjectVm>>> GetProjectsFilter(string searchType,string search);
         public Task<ResponseResult<IsFeedbackAddedResponseModel>> IsAddedFeedback(string projectID);
-        public Task<ResponseResult<AddFeedbackReponseModel>> AddFeedback([FromBody] AddFeedBackRequestModel param);
+        public Task<ResponseResult<CommonMessageResponseModel>> AddFeedback([FromBody] AddFeedBackRequestModel param);
         public Task<ResponseResult<FeedbackResponseModel>> GetFeedback([FromBody] GetFeedBackRequestModel param);
 
         public Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedbackList([FromBody] GetFeedBackRequestModel param);
