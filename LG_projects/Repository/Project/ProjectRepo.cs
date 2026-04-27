@@ -18,10 +18,12 @@ namespace LG_projects.Repository.Auth
         private readonly IWebHostEnvironment _env;
 
         private readonly IConfiguration configuration;
-        public ProjectRepo(IDBLogics _db, IWebHostEnvironment env, IConfiguration configuration)
+        private readonly Settings settings;
+        public ProjectRepo(IDBLogics _db, Settings _settings, IWebHostEnvironment env, IConfiguration configuration)
         {
             db = _db;
             _env = env;
+            this.settings = _settings;
             this.configuration = configuration;
         }
 
@@ -242,77 +244,158 @@ namespace LG_projects.Repository.Auth
 
         public async Task<ResponseResult<CommonMessageResponseModel>> AddFeedback(AddFeedBackRequestModel model)
         {
+           
             try
             {
-                // ── Step 1: Insert Feedback row ───────────────────────────────
+                // ── Step 1: Insert Feedback ───────────────────────────────
                 string query = @"
-                INSERT INTO Feedback 
-                    (name_en, name_ur, email, phone, whatsApp_phone, TextMessage, projectId, created_at)
-                VALUES 
-                    (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage, @ProjectId, GETDATE());
-                SELECT CAST(SCOPE_IDENTITY() AS int);";
-                //                                  ↑
-                //   FIXED: was @Phone before — now correctly @WhatsAppPhone
+        INSERT INTO Feedback 
+            (name_en, name_ur, email, phone, whatsApp_phone, TextMessage, projectId, created_at)
+        VALUES 
+            (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage, @ProjectId, GETDATE());
+        SELECT CAST(SCOPE_IDENTITY() AS int);";
 
-                var feedbackId = db.ExecuteScalar<int>(query, new
+                settings.InsertLog($"AddFeedback QUERY(Feedback) | {query} | Params: Name:{model.NameEn}, Phone:{model.Phone}, ProjectId:{model.ProjectId}");
+
+                int feedbackId = 0;
+
+                try
                 {
-                    NameEn = model.NameEn,
-                    NameUr = model.NameUr,
-                    Email = model.Email,
-                    Phone = model.Phone,
-                    WhatsAppPhone = model.Phone,
-                    TextMessage = model.TextMessage,
-                    ProjectId = model.ProjectId
-                });
+                    settings.InsertLog("AddFeedback EXECUTE(Feedback)");
 
-                // ── Step 2: Save files to disk, get relative paths ────────────
-                // FileHelper returns "" if file is null — safe to call always
+                    feedbackId = db.ExecuteScalar<int>(query, new
+                    {
+                        NameEn = model.NameEn,
+                        NameUr = model.NameUr,
+                        Email = model.Email,
+                        Phone = model.Phone,
+                        WhatsAppPhone = model.Phone,
+                        TextMessage = model.TextMessage,
+                        ProjectId = model.ProjectId
+                    });
+
+                    settings.InsertLog($"AddFeedback SUCCESS(Feedback) | FeedbackId:{feedbackId}");
+                }
+                catch (Exception ex)
+                {
+                    settings.InsertLog($"AddFeedback FAILED(Feedback) | Error:{ex.Message} | Query:{query}");
+                    throw;
+                }
+
+                // ── Step 2: Save Files ───────────────────────────────
+                
                 var imagePath = await FileHelper.SaveFile(model.ImageFile, "image", _env);
                 var videoPath = await FileHelper.SaveFile(model.VideoFile, "video", _env);
                 var audioPath = await FileHelper.SaveFile(model.AudioFile, "audio", _env);
 
-                // ── Step 3: Insert each file into FeedbackMedia table ─────────
-                string mediaQuery = @"
-                INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
-                VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());";
+                settings.InsertLog($"AddFeedback FILE SAVE DONE | Image:{imagePath} | Video:{videoPath} | Audio:{audioPath}");
 
-                // Only insert if file was actually uploaded and saved
+                // ── Step 3: Insert Media ───────────────────────────────
+                string mediaQuery = @"
+        INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
+        VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());";
+
+                // IMAGE
                 if (!string.IsNullOrEmpty(imagePath))
                 {
-                    db.Execute(mediaQuery, new
+                    settings.InsertLog($"AddFeedback QUERY(Media-Image) | {mediaQuery} | FeedbackId:{feedbackId}");
+
+                    try
                     {
-                        FeedbackId = feedbackId,
-                        FilePath = imagePath,   // e.g. /media/images/abc.jpg
-                        MediaType = "image"
-                    });
+                        
+                        db.Execute(mediaQuery, new
+                        {
+                            FeedbackId = feedbackId,
+                            FilePath = imagePath,
+                            MediaType = "image"
+                        });
+
+                        settings.InsertLog("AddFeedback SUCCESS(Media-Image)");
+                    }
+                    catch (Exception ex)
+                    {
+                        settings.InsertLog($"AddFeedback FAILED(Media-Image) | Error:{ex.Message}");
+                        throw;
+                    }
                 }
 
+                // VIDEO
                 if (!string.IsNullOrEmpty(videoPath))
                 {
-                    db.Execute(mediaQuery, new
+                    settings.InsertLog($"AddFeedback QUERY(Media-Video) | {mediaQuery} | FeedbackId:{feedbackId}");
+
+                    try
                     {
-                        FeedbackId = feedbackId,
-                        FilePath = videoPath,   // e.g. /media/videos/abc.mp4
-                        MediaType = "video"
-                    });
+                      
+                        db.Execute(mediaQuery, new
+                        {
+                            FeedbackId = feedbackId,
+                            FilePath = videoPath,
+                            MediaType = "video"
+                        });
+
+                        settings.InsertLog("AddFeedback SUCCESS(Media-Video)");
+                    }
+                    catch (Exception ex)
+                    {
+                        settings.InsertLog($"AddFeedback FAILED(Media-Video) | Error:{ex.Message}");
+                        throw;
+                    }
                 }
 
+                // AUDIO
                 if (!string.IsNullOrEmpty(audioPath))
                 {
-                    db.Execute(mediaQuery, new
+                    
+                    try
                     {
-                        FeedbackId = feedbackId,
-                        FilePath = audioPath,   // e.g. /media/audios/abc.mp3
-                        MediaType = "audio"
-                    });
+                        settings.InsertLog("AddFeedback EXECUTE(Media-Audio)");
+
+                        db.Execute(mediaQuery, new
+                        {
+                            FeedbackId = feedbackId,
+                            FilePath = audioPath,
+                            MediaType = "audio"
+                        });
+
+                        settings.InsertLog("AddFeedback SUCCESS(Media-Audio)");
+                    }
+                    catch (Exception ex)
+                    {
+                        settings.InsertLog($"AddFeedback FAILED(Media-Audio) | Error:{ex.Message}");
+                        throw;
+                    }
                 }
 
+                // ── Step 4: Update Project ───────────────────────────────
                 string updateQuery = "UPDATE Projects SET isFeedbackAdded = @isFeedbackAdded WHERE id = @id";
-                var updateParameters = new Dapper.DynamicParameters();
-                updateParameters.Add("@isFeedbackAdded", 1);
-                updateParameters.Add("@id", model.ProjectId);
-              var res =  db.Execute(updateQuery, updateParameters);
-                if (res > 0) {
+
+                settings.InsertLog($"AddFeedback QUERY(UpdateProject) | {updateQuery} | ProjectId:{model.ProjectId}");
+
+                int res = 0;
+
+                try
+                {
+                   
+                    var updateParameters = new Dapper.DynamicParameters();
+                    updateParameters.Add("@isFeedbackAdded", 1);
+                    updateParameters.Add("@id", model.ProjectId);
+
+                    res = db.Execute(updateQuery, updateParameters);
+
+                    settings.InsertLog($"AddFeedback SUCCESS(UpdateProject) | Rows:{res}");
+                }
+                catch (Exception ex)
+                {
+                    settings.InsertLog($"AddFeedback FAILED(UpdateProject) | Error:{ex.Message}");
+                    throw;
+                }
+
+                // ── Final Response ───────────────────────────────
+                if (res > 0)
+                {
+                    settings.InsertLog("AddFeedback END SUCCESS");
+
                     return new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = 200,
@@ -323,7 +406,11 @@ namespace LG_projects.Repository.Auth
                             messageUr = "تاثرات کامیابی کے ساتھ شامل ہو گئے۔"
                         }
                     };
-                } else {
+                }
+                else
+                {
+                    settings.InsertLog("AddFeedback END FAILED");
+
                     return new ResponseResult<CommonMessageResponseModel>
                     {
                         StatusCode = 200,
@@ -338,16 +425,123 @@ namespace LG_projects.Repository.Auth
             }
             catch (Exception ex)
             {
+                settings.InsertLog($"AddFeedback CATCH ERROR | ProjectId:{model.ProjectId} | Error:{ex.Message}");
+
                 return new ResponseResult<CommonMessageResponseModel>
                 {
                     StatusCode = 500,
-                    Message = "Internal Server Error" + " (" + ex.Message + ")",
-                    MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
+                    Message = "Internal Server Error (" + ex.Message + ")",
+                    MessageUr = "اندرونی سرور کی خرابی (" + ex.Message + ")",
                 };
             }
         }
+        //public async Task<ResponseResult<CommonMessageResponseModel>> AddFeedback(AddFeedBackRequestModel model)
+        //{
+        //    try
+        //    {
+        //        // ── Step 1: Insert Feedback row ───────────────────────────────
+        //        string query = @"
+        //        INSERT INTO Feedback 
+        //            (name_en, name_ur, email, phone, whatsApp_phone, TextMessage, projectId, created_at)
+        //        VALUES 
+        //            (@NameEn, @NameUr, @Email, @Phone, @WhatsAppPhone, @TextMessage, @ProjectId, GETDATE());
+        //        SELECT CAST(SCOPE_IDENTITY() AS int);";
+        //        //                                  ↑
+        //       
+        //        var feedbackId = db.ExecuteScalar<int>(query, new
+        //        {
+        //            NameEn = model.NameEn,
+        //            NameUr = model.NameUr,
+        //            Email = model.Email,
+        //            Phone = model.Phone,
+        //            WhatsAppPhone = model.Phone,
+        //            TextMessage = model.TextMessage,
+        //            ProjectId = model.ProjectId
+        //        });
+        //        // ── Step 2: Save files to disk, get relative paths ────────────
+        //        // FileHelper returns "" if file is null — safe to call always
+        //        var imagePath = await FileHelper.SaveFile(model.ImageFile, "image", _env);
+        //        var videoPath = await FileHelper.SaveFile(model.VideoFile, "video", _env);
+        //        var audioPath = await FileHelper.SaveFile(model.AudioFile, "audio", _env);
 
-                //List of feedback
+        //        // ── Step 3: Insert each file into FeedbackMedia table ─────────
+        //        string mediaQuery = @"
+        //        INSERT INTO FeedbackMedia (feedbackId, FilePath, MediaType, created_at)
+        //        VALUES (@FeedbackId, @FilePath, @MediaType, GETDATE());";
+
+        //        // Only insert if file was actually uploaded and saved
+        //        if (!string.IsNullOrEmpty(imagePath))
+        //        {
+
+        //            db.Execute(mediaQuery, new
+        //            {
+        //                FeedbackId = feedbackId,
+        //                FilePath = imagePath,   // e.g. /media/images/abc.jpg
+        //                MediaType = "image"
+        //            });
+        //        }
+
+        //        if (!string.IsNullOrEmpty(videoPath))
+        //        {
+        //            db.Execute(mediaQuery, new
+        //            {
+        //                FeedbackId = feedbackId,
+        //                FilePath = videoPath,   // e.g. /media/videos/abc.mp4
+        //                MediaType = "video"
+        //            });
+        //        }
+
+        //        if (!string.IsNullOrEmpty(audioPath))
+        //        {
+        //            db.Execute(mediaQuery, new
+        //            {
+        //                FeedbackId = feedbackId,
+        //                FilePath = audioPath,   // e.g. /media/audios/abc.mp3
+        //                MediaType = "audio"
+        //            });
+        //        }
+
+        //        string updateQuery = "UPDATE Projects SET isFeedbackAdded = @isFeedbackAdded WHERE id = @id";
+        //        var updateParameters = new Dapper.DynamicParameters();
+        //        updateParameters.Add("@isFeedbackAdded", 1);
+        //        updateParameters.Add("@id", model.ProjectId);
+        //      var res =  db.Execute(updateQuery, updateParameters);
+        //        if (res > 0) {
+        //            return new ResponseResult<CommonMessageResponseModel>
+        //            {
+        //                StatusCode = 200,
+        //                Message = "Success",
+        //                Data = new CommonMessageResponseModel
+        //                {
+        //                    message = "Feedback added successfully",
+        //                    messageUr = "تاثرات کامیابی کے ساتھ شامل ہو گئے۔"
+        //                }
+        //            };
+        //        } else {
+        //            return new ResponseResult<CommonMessageResponseModel>
+        //            {
+        //                StatusCode = 200,
+        //                Message = "Failed",
+        //                Data = new CommonMessageResponseModel
+        //                {
+        //                    message = "Feedback added failed",
+        //                    messageUr = "تاثرات شامل کرنا ناکام ہو گیا۔"
+        //                }
+        //            };
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResponseResult<CommonMessageResponseModel>
+        //        {
+        //            StatusCode = 500,
+        //            Message = "Internal Server Error" + " (" + ex.Message + ")",
+        //            MessageUr = "اندرونی سرور کی خرابی۔" + " (" + ex.Message + ")",
+        //        };
+        //    }
+        //}
+
+        //List of feedback
         public async Task<ResponseResult<List<FeedbackResponseModel>>> GetFeedbackList(GetFeedBackRequestModel model)
         {
             try

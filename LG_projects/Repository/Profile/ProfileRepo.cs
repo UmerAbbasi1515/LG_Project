@@ -8,15 +8,19 @@ using LG_projects.RequestModel.Auth;
 using LG_projects.ResponseModel.Auth;
 using System.Net;
 using System.Reflection;
+using static Dapper.SqlMapper;
+using Settings = LG_projects.Classes.Settings;
 
 namespace LG_projects.Repository.Profile
 {
     public class ProfileRepo : IProfileRepo
     {
         private readonly IDBLogics db;
-        public ProfileRepo(IDBLogics _db)
+        private readonly Settings settings;
+        public ProfileRepo(IDBLogics _db, Settings _settings)
         {
             db = _db;
+            this.settings = _settings;
         }
 
         public async Task<ResponseResult<UserVm>> GetUserProfileRepo(string userId)
@@ -89,8 +93,9 @@ namespace LG_projects.Repository.Profile
                         addressur = @AddressUr,
                         updated_at = GETDATE()
                     WHERE id = @UserId";
+                settings. InsertLog($"UpdateUserProfile START | UserId: {model.UserId} | NameEn: {model.NameEn} | Email: {model.Email} | Phone: {model.Phone} | Query: {query}");
 
-                    var parameters = new DynamicParameters();
+                var parameters = new DynamicParameters();
                     parameters.Add("@UserId", model.UserId);
                     parameters.Add("@NameEn", model.NameEn);
                     parameters.Add("@NameUr", model.NameUr);
@@ -102,6 +107,9 @@ namespace LG_projects.Repository.Profile
 
                 CommonMessageResponseModel profileUpdated = new CommonMessageResponseModel();
                 if (rowsAffected > 0) {
+
+                    settings.InsertLog($"UpdateUserProfile EXECUTED | UserId: {model.UserId} | RowsAffected: {rowsAffected}");
+
                     profileUpdated.message = "Profile updated successfully";
                     profileUpdated.messageUr = "پروفائل کامیابی کے ساتھ اپ ڈیٹ ہو گیا۔";
                     responseResult = new ResponseResult<CommonMessageResponseModel>
@@ -114,6 +122,7 @@ namespace LG_projects.Repository.Profile
                 }
                 else
                 {
+                    settings.InsertLog($"UpdateUserProfile FAILED | UserId: {model.UserId} | No rows affected");
 
                     profileUpdated.message = "Profile updated failed";
                     profileUpdated.messageUr = "پروفائل کو اپ ڈیٹ کرنا ناکام ہو گیا۔";
@@ -129,6 +138,8 @@ namespace LG_projects.Repository.Profile
                 }
             catch (Exception ex)
             {
+                settings.InsertLog($"UpdateUserProfile ERROR | UserId: {model.UserId} | Exception: {ex.Message}");
+
                 responseResult = new ResponseResult<CommonMessageResponseModel>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,

@@ -5,6 +5,8 @@ using LG_projects.Common.BaseResponse;
 using LG_projects.DAL;
 using LG_projects.ResponseModel.Auth;
 using System.Net;
+using static Dapper.SqlMapper;
+using Settings = LG_projects.Classes.Settings;
 
 namespace LG_projects.Repository.Auth
 {
@@ -301,6 +303,8 @@ namespace LG_projects.Repository.Auth
             try
             {
                 string query = "UPDATE Users SET Password = @Password, IsPassword = 1 WHERE Phone = @Mobile;";
+                // ✅ Log start
+                settings.InsertLog($"SetUserPassword START | Mobile: {mobile} | Password: {password} | Query: {query}");
                 var parameters = new Dapper.DynamicParameters();
                 parameters.Add("@mobile", mobile);
                 parameters.Add("@password", password);
@@ -309,6 +313,8 @@ namespace LG_projects.Repository.Auth
                 var rowsAffected = db.Execute(query, parameters);
                 if (rowsAffected > 0)
                 {
+                    // ✅ Log result
+                    settings.InsertLog($"SetUserPassword EXECUTED | RowsAffected: {rowsAffected}");
                     commonMessage.message = "Password update successfully";
                     commonMessage.messageUr = "پاس ورڈ کامیابی سے اپ ڈیٹ ہو گیا۔";
                     responseResult = new ResponseResult<CommonMessageResponseModel>
@@ -321,6 +327,7 @@ namespace LG_projects.Repository.Auth
                 }
                 else
                 {
+                    settings.InsertLog("SetUserPassword FAILED - No rows affected");
                     commonMessage.message = "Password update failed";
                     commonMessage.messageUr = "پاس ورڈ اپ ڈیٹ ناکام ہو گیا۔";
                     responseResult = new ResponseResult<CommonMessageResponseModel>
@@ -335,6 +342,7 @@ namespace LG_projects.Repository.Auth
             }
             catch (Exception ex)
             {
+                settings.InsertLog($"SetUserPassword ERROR | {ex.Message}");
                 responseResult = new ResponseResult<CommonMessageResponseModel>
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
