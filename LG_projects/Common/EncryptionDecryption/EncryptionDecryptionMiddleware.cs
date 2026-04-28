@@ -15,6 +15,7 @@ namespace LG_projects.Common.EncryptionDecryption
         {
             _next = next;
         }
+
         public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Method == "GET" ||
@@ -24,112 +25,34 @@ namespace LG_projects.Common.EncryptionDecryption
                 await _next(httpContext);
                 return;
             }
-            var json = JsonConvert.SerializeObject(new
-            {
-                mobile = "+923025784083"
-            });
 
-            var encrypted = EncryptionHelper.Encrypt(json);
-
-            Console.WriteLine(encrypted);
             try
             {
-                httpContext.Request.EnableBuffering();
-                using var sr = new StreamReader(
-                    httpContext.Request.Body, Encoding.UTF8, leaveOpen: true);
-                var originalContent = await sr.ReadToEndAsync();
-                httpContext.Request.Body.Position = 0;
+                var contentType = httpContext.Request.ContentType ?? "";
 
-                if (!string.IsNullOrWhiteSpace(originalContent))
+                // ✅ FORM DATA HANDLING
+                if (contentType.Contains("multipart/form-data") ||
+                    contentType.Contains("application/x-www-form-urlencoded"))
                 {
-                    var ds = JsonConvert.DeserializeObject<RB>(originalContent);
-
-                    // ✅ BLOCK plain requests
-                    if (string.IsNullOrEmpty(ds?.RequestBody))
+                    await HandleFormData(httpContext);
+                }
+                // ✅ JSON HANDLING
+                else if (contentType.Contains("application/json"))
+                {
+                    await HandleJsonData(httpContext);
+                }
+                else
+                {
+                    // Block unknown content types
+                    httpContext.Response.StatusCode = 400;
+                    httpContext.Response.ContentType = "application/json";
+                    await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
                     {
-                        httpContext.Response.StatusCode = 400;
-                        httpContext.Response.ContentType = "application/json";
-                        await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
-                        {
-                            StatusCode = 400,
-                            Message = "Unencrypted requests are not allowed.",
-                            MessageUr = "غیر انکرپٹڈ درخواست قبول نہیں۔"
-                        }));
-                        return;
-                    }
-
-                    // ✅ Step 1: Decrypt full body
-                    string decryptedContent;
-                    try
-                    {
-                        decryptedContent = EncryptionHelper.Decrypt(ds.RequestBody);
-                    }
-                    catch
-                    {
-                        httpContext.Response.StatusCode = 400;
-                        httpContext.Response.ContentType = "application/json";
-                        await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
-                        {
-                            StatusCode = 400,
-                            Message = "Invalid encrypted payload.",
-                            MessageUr = "انکرپشن ڈیٹا غلط ہے۔"
-                        }));
-                        return;
-                    }
-
-                    // ✅ Step 2: Decrypt each field value inside the body
-                    var bodyDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(decryptedContent);
-                    if (bodyDict != null)
-                    {
-                        var decryptedDict = new Dictionary<string, object>();
-                        var mobileRegex = new System.Text.RegularExpressions.Regex(@"^(\+92\d{10}|0\d{10})$");
-
-                        foreach (var kvp in bodyDict)
-                        {
-                            string fieldValue = kvp.Value?.ToString() ?? "";
-                            string decryptedValue = fieldValue;
-
-                            // Try to decrypt field value
-                            try
-                            {
-                                decryptedValue = EncryptionHelper.Decrypt(fieldValue);
-                            }
-                            catch
-                            {
-                                // Not encrypted — use as is
-                                decryptedValue = fieldValue;
-                            }
-
-                            // ✅ Step 3: Validate mobile format if field is mobile
-                            if (kvp.Key.ToLower() == "mobile" && !string.IsNullOrEmpty(decryptedValue))
-                            {
-                                if (!mobileRegex.IsMatch(decryptedValue))
-                                {
-                                    httpContext.Response.StatusCode = 400;
-                                    httpContext.Response.ContentType = "application/json";
-                                    await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
-                                    {
-                                        StatusCode = 400,
-                                        Message = "Invalid mobile number format. Use 03001234567 or +923001234567",
-                                        MessageUr = "موبائل نمبر کا فارمیٹ غلط ہے۔"
-                                    }));
-                                    return;
-                                }
-                            }
-
-                            decryptedDict[kvp.Key] = decryptedValue;
-                        }
-
-                        decryptedContent = JsonConvert.SerializeObject(decryptedDict);
-                    }
-
-                    // ✅ Step 4: Replace body with fully decrypted plain JSON
-                    var bytes = Encoding.UTF8.GetBytes(decryptedContent);
-                    var newBody = new MemoryStream(bytes);
-                    newBody.Position = 0;
-                    httpContext.Request.Body = newBody;
-                    httpContext.Request.ContentLength = bytes.Length;
-                    httpContext.Request.ContentType = "application/json; charset=utf-8";
+                        StatusCode = 400,
+                        Message = "Unsupported content type.",
+                        MessageUr = "غیر معاون کنٹینٹ ٹائپ۔"
+                    }));
+                    return;
                 }
             }
             catch (Exception ex)
@@ -148,6 +71,182 @@ namespace LG_projects.Common.EncryptionDecryption
             await _next(httpContext);
         }
 
+        // ──────────────────────────────────────────
+        // ✅ JSON HANDLER
+        // ──────────────────────────────────────────
+        private async Task HandleJsonData(HttpContext httpContext)
+        {
+            httpContext.Request.EnableBuffering();
+            using var sr = new StreamReader(httpContext.Request.Body, Encoding.UTF8, leaveOpen: true);
+            var originalContent = await sr.ReadToEndAsync();
+            httpContext.Request.Body.Position = 0;
+
+            if (string.IsNullOrWhiteSpace(originalContent)) return;
+
+            var ds = JsonConvert.DeserializeObject<RB>(originalContent);
+
+            // BLOCK plain JSON
+            if (string.IsNullOrEmpty(ds?.RequestBody))
+            {
+                httpContext.Response.StatusCode = 400;
+                httpContext.Response.ContentType = "application/json";
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    StatusCode = 400,
+                    Message = "Unencrypted requests are not allowed.",
+                    MessageUr = "غیر انکرپٹڈ درخواست قبول نہیں۔"
+                }));
+                return;
+            }
+
+            // Decrypt full body
+            string decryptedContent;
+            try
+            {
+                decryptedContent = EncryptionHelper.Decrypt(ds.RequestBody);
+            }
+            catch
+            {
+                httpContext.Response.StatusCode = 400;
+                httpContext.Response.ContentType = "application/json";
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    StatusCode = 400,
+                    Message = "Invalid encrypted payload.",
+                    MessageUr = "انکرپشن ڈیٹا غلط ہے۔"
+                }));
+                return;
+            }
+
+            // Decrypt each field + validate mobile
+            var bodyDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(decryptedContent);
+            if (bodyDict != null)
+            {
+                var decryptedDict = new Dictionary<string, object>();
+                var mobileRegex = new System.Text.RegularExpressions.Regex(@"^(\+92\d{10}|0\d{10})$");
+
+                foreach (var kvp in bodyDict)
+                {
+                    string fieldValue = kvp.Value?.ToString() ?? "";
+                    string decryptedValue = fieldValue;
+
+                    try { decryptedValue = EncryptionHelper.Decrypt(fieldValue); }
+                    catch { decryptedValue = fieldValue; }
+
+                    if (kvp.Key.ToLower() == "mobile" && !string.IsNullOrEmpty(decryptedValue))
+                    {
+                        if (!mobileRegex.IsMatch(decryptedValue))
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            httpContext.Response.ContentType = "application/json";
+                            await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                            {
+                                StatusCode = 400,
+                                Message = "Invalid mobile number format. Use 03001234567 or +923001234567",
+                                MessageUr = "موبائل نمبر کا فارمیٹ غلط ہے۔"
+                            }));
+                            return;
+                        }
+                    }
+
+                    decryptedDict[kvp.Key] = decryptedValue;
+                }
+
+                decryptedContent = JsonConvert.SerializeObject(decryptedDict);
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(decryptedContent);
+            var newBody = new MemoryStream(bytes);
+            newBody.Position = 0;
+            httpContext.Request.Body = newBody;
+            httpContext.Request.ContentLength = bytes.Length;
+            httpContext.Request.ContentType = "application/json; charset=utf-8";
+        }
+
+        // ──────────────────────────────────────────
+        // ✅ FORM DATA HANDLER
+        // ──────────────────────────────────────────
+        private async Task HandleFormData(HttpContext httpContext)
+        {
+            var mobileRegex = new System.Text.RegularExpressions.Regex(@"^(\+92\d{10}|0\d{10})$");
+
+            // Read existing form fields
+            var form = httpContext.Request.Form;
+            var decryptedFields = new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>();
+
+            bool hasRequestBody = form.ContainsKey("RequestBody");
+
+            // BLOCK plain form data — must have RequestBody key
+            if (!hasRequestBody)
+            {
+                httpContext.Response.StatusCode = 400;
+                httpContext.Response.ContentType = "application/json";
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    StatusCode = 400,
+                    Message = "Unencrypted requests are not allowed.",
+                    MessageUr = "غیر انکرپٹڈ درخواست قبول نہیں۔"
+                }));
+                return;
+            }
+
+            // Decrypt the RequestBody field value
+            string decryptedContent;
+            try
+            {
+                decryptedContent = EncryptionHelper.Decrypt(form["RequestBody"].ToString());
+            }
+            catch
+            {
+                httpContext.Response.StatusCode = 400;
+                httpContext.Response.ContentType = "application/json";
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    StatusCode = 400,
+                    Message = "Invalid encrypted payload.",
+                    MessageUr = "انکرپشن ڈیٹا غلط ہے۔"
+                }));
+                return;
+            }
+
+            // Parse decrypted content as JSON fields
+            var bodyDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(decryptedContent);
+            if (bodyDict != null)
+            {
+                foreach (var kvp in bodyDict)
+                {
+                    string fieldValue = kvp.Value?.ToString() ?? "";
+                    string decryptedValue = fieldValue;
+
+                    try { decryptedValue = EncryptionHelper.Decrypt(fieldValue); }
+                    catch { decryptedValue = fieldValue; }
+
+                    // Validate mobile
+                    if (kvp.Key.ToLower() == "mobile" && !string.IsNullOrEmpty(decryptedValue))
+                    {
+                        if (!mobileRegex.IsMatch(decryptedValue))
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            httpContext.Response.ContentType = "application/json";
+                            await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                            {
+                                StatusCode = 400,
+                                Message = "Invalid mobile number format. Use 03001234567 or +923001234567",
+                                MessageUr = "موبائل نمبر کا فارمیٹ غلط ہے۔"
+                            }));
+                            return;
+                        }
+                    }
+
+                    decryptedFields[kvp.Key] = decryptedValue;
+                }
+            }
+
+            // ✅ Rebuild form collection with decrypted values
+            // Keep original files, replace fields with decrypted ones
+            var formCollection = new FormCollection(decryptedFields, form.Files);
+            httpContext.Request.Form = formCollection;
+        }
     }
 
     internal class RB
