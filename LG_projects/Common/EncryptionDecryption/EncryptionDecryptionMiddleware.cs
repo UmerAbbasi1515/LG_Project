@@ -169,83 +169,69 @@ namespace LG_projects.Common.EncryptionDecryption
         private async Task HandleFormData(HttpContext httpContext)
         {
             var mobileRegex = new System.Text.RegularExpressions.Regex(@"^(\+92\d{10}|0\d{10})$");
-
-            // Read existing form fields
             var form = httpContext.Request.Form;
             var decryptedFields = new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>();
 
-            bool hasRequestBody = form.ContainsKey("RequestBody");
-
-            // BLOCK plain form data — must have RequestBody key
-            if (!hasRequestBody)
+            // BLOCK if no fields at all
+            if (!form.Keys.Any())
             {
                 httpContext.Response.StatusCode = 400;
                 httpContext.Response.ContentType = "application/json";
                 await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
                 {
                     StatusCode = 400,
-                    Message = "Unencrypted requests are not allowed.",
-                    MessageUr = "غیر انکرپٹڈ درخواست قبول نہیں۔"
+                    Message = "Empty request is not allowed.",
+                    MessageUr = "خالی درخواست قبول نہیں۔"
                 }));
                 return;
             }
 
-            // Decrypt the RequestBody field value
-            string decryptedContent;
-            try
+            foreach (var key in form.Keys)
             {
-                decryptedContent = EncryptionHelper.Decrypt(form["RequestBody"].ToString());
-            }
-            catch
-            {
-                httpContext.Response.StatusCode = 400;
-                httpContext.Response.ContentType = "application/json";
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                string fieldValue = form[key].ToString();
+                string decryptedValue = fieldValue;
+
+                try
                 {
-                    StatusCode = 400,
-                    Message = "Invalid encrypted payload.",
-                    MessageUr = "انکرپشن ڈیٹا غلط ہے۔"
-                }));
-                return;
-            }
-
-            // Parse decrypted content as JSON fields
-            var bodyDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(decryptedContent);
-            if (bodyDict != null)
-            {
-                foreach (var kvp in bodyDict)
-                {
-                    string fieldValue = kvp.Value?.ToString() ?? "";
-                    string decryptedValue = fieldValue;
-
-                    try { decryptedValue = EncryptionHelper.Decrypt(fieldValue); }
-                    catch { decryptedValue = fieldValue; }
-
-                    // Validate mobile
-                    if (kvp.Key.ToLower() == "mobile" && !string.IsNullOrEmpty(decryptedValue))
-                    {
-                        if (!mobileRegex.IsMatch(decryptedValue))
-                        {
-                            httpContext.Response.StatusCode = 400;
-                            httpContext.Response.ContentType = "application/json";
-                            await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
-                            {
-                                StatusCode = 400,
-                                Message = "Invalid mobile number format. Use 03001234567 or +923001234567",
-                                MessageUr = "موبائل نمبر کا فارمیٹ غلط ہے۔"
-                            }));
-                            return;
-                        }
-                    }
-
-                    decryptedFields[kvp.Key] = decryptedValue;
+                    decryptedValue = EncryptionHelper.Decrypt(fieldValue);
                 }
+                catch (Exception ex)
+                {
+                    httpContext.Response.StatusCode = 400;
+                    httpContext.Response.ContentType = "application/json";
+                    await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                    {
+                        StatusCode = 400,
+                        Message = $"Field '{key}' decrypt failed: {ex.Message}",
+                        MessageUr = $"فیلڈ '{key}' انکرپٹڈ نہیں ہے۔"
+                    }));
+                    return;
+                }
+
+                // Validate mobile/phone
+                if ((key.ToLower() == "mobile" || key.ToLower() == "phone")
+                     && !string.IsNullOrEmpty(decryptedValue))
+                {
+                    if (!mobileRegex.IsMatch(decryptedValue))
+                    {
+                        httpContext.Response.StatusCode = 400;
+                        httpContext.Response.ContentType = "application/json";
+                        await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                        {
+                            StatusCode = 400,
+                            Message = "Invalid mobile number format. Use 03001234567 or +923001234567",
+                            MessageUr = "موبائل نمبر کا فارمیٹ غلط ہے۔"
+                        }));
+                        return;
+                    }
+                }
+
+                // ✅ THIS LINE WAS MISSING — add decrypted value to dictionary
+                decryptedFields[key] = decryptedValue;
             }
 
-            // ✅ Rebuild form collection with decrypted values
-            // Keep original files, replace fields with decrypted ones
-            var formCollection = new FormCollection(decryptedFields, form.Files);
-            httpContext.Request.Form = formCollection;
+            // Rebuild form with decrypted fields + original files untouched
+            httpContext.Request.Form = new FormCollection(decryptedFields, form.Files);
         }
     }
 
