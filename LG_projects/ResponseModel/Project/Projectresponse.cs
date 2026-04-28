@@ -93,5 +93,7 @@
         public string? FilePath { get; set; }
         public string? MediaType { get; set; }
         public string? PreviewUrl { get; set; }
+        public string? PreviewUrlA { get; set; }
+        public string? PreviewUrlI { get; set; }
     }
 }

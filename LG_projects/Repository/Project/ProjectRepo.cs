@@ -553,9 +553,8 @@ namespace LG_projects.Repository.Auth
                 //
                 // OR pass IConfiguration into your repo constructor and read it.
                 // For now it reads from _config which you already have injected.
-                string baseUrlA = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
-                string baseUrlI = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
-                var baseUrl = baseUrlA + "," + baseUrlI;
+                string baseUrlI = configuration["AppSettings:BaseUrlIos"]?.TrimEnd('/') ?? "";
+                var baseUrl = configuration["AppSettings:BaseUrl"]?.TrimEnd('/') ?? "";
 
 
                 // ── Step 2: Query Feedback + Media joined ─────────────────────
@@ -628,7 +627,8 @@ namespace LG_projects.Repository.Auth
                         {
                             FilePath = filePath,
                             MediaType = item.MediaType,
-                            PreviewUrl = baseUrl + filePath
+                            PreviewUrl = baseUrl + filePath,
+                            PreviewUrlI = baseUrlI + filePath
                             // Examples:
                             //   https://localhost:7000/media/images/abc.jpg  → browser shows image
                             //   https://localhost:7000/media/videos/abc.mp4  → browser plays video
@@ -661,9 +661,8 @@ namespace LG_projects.Repository.Auth
         {
             try
             {
-                string baseUrlA = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
-                string baseUrlI = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
-                var baseUrl = baseUrlA + "," + baseUrlI;
+                string baseUrlI = configuration["AppSettings:BaseUrlIos"]?.TrimEnd('/') ?? "";
+                var baseUrl = configuration["AppSettings:BaseUrl"]?.TrimEnd('/') ?? "";
 
                 string query = @" 
         SELECT 
@@ -727,7 +726,8 @@ namespace LG_projects.Repository.Auth
                         {
                             FilePath = filePath,
                             MediaType = item.MediaType,
-                            PreviewUrl = baseUrl + filePath
+                            PreviewUrl = baseUrl + filePath,
+                            PreviewUrlI = baseUrlI + filePath
                         });
                     }
                 }
