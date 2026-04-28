@@ -553,7 +553,10 @@ namespace LG_projects.Repository.Auth
                 //
                 // OR pass IConfiguration into your repo constructor and read it.
                 // For now it reads from _config which you already have injected.
-                string baseUrl = configuration["AppSettings:BaseUrl"]?.TrimEnd('/') ?? "";
+                string baseUrlA = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
+                string baseUrlI = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
+                var baseUrl = baseUrlA + "," + baseUrlI;
+
 
                 // ── Step 2: Query Feedback + Media joined ─────────────────────
                 string query = @"
@@ -658,7 +661,9 @@ namespace LG_projects.Repository.Auth
         {
             try
             {
-                string baseUrl = configuration["AppSettings:BaseUrl"]?.TrimEnd('/') ?? "";
+                string baseUrlA = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
+                string baseUrlI = configuration["AppSettings:BaseUrlAndroid"]?.TrimEnd('/') ?? "";
+                var baseUrl = baseUrlA + "," + baseUrlI;
 
                 string query = @" 
         SELECT 
