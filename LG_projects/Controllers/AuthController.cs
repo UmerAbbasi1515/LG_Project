@@ -1,6 +1,7 @@
 ﻿using LG_projects.Classes;
 using LG_projects.Classes.Token;
 using LG_projects.Common.BaseResponse;
+using LG_projects.Common.EncryptionDecryption;
 using LG_projects.Common.ListConvertor;
 using LG_projects.DAL;
 using LG_projects.Repository.Auth;
@@ -92,6 +93,8 @@ namespace LG_projects.Controllers
             try
             {
                 string mobile = param.mobile ?? "";
+          
+
                 responseResult = await authRepo.ValidateUserRepo(mobile.ToString());
                 return await Task.FromResult(responseResult);
             }
